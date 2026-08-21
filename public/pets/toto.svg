@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">든든거북 토토</title><desc id="desc">초록 거북 펫이 든든하게 미소 짓는다</desc>
+  <defs><linearGradient id="shell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8fc99a"/><stop offset="1" stop-color="#4f8e72"/></linearGradient></defs>
+  <ellipse cx="110" cy="124" rx="72" ry="61" fill="url(#shell)"/>
+  <path d="M110 68v111M54 116h112M69 83l82 74M151 83l-82 74" stroke="#39735b" stroke-width="6" opacity=".55"/>
+  <circle cx="110" cy="69" r="42" fill="#a9d99d"/>
+  <ellipse cx="78" cy="179" rx="25" ry="15" fill="#a9d99d"/><ellipse cx="160" cy="179" rx="25" ry="15" fill="#a9d99d"/>
+  <ellipse cx="82" cy="65" rx="7" ry="9" fill="#26364d"/><ellipse cx="138" cy="65" rx="7" ry="9" fill="#26364d"/>
+  <circle cx="80" cy="62" r="2.5" fill="white"/><circle cx="136" cy="62" r="2.5" fill="white"/>
+  <path d="M96 84q14 13 28 0" fill="none" stroke="#26364d" stroke-width="5" stroke-linecap="round"/>
+  <path d="M70 47q12-13 24-2M126 45q12-11 24 2" fill="none" stroke="#39735b" stroke-width="5" stroke-linecap="round"/>
+  <path fill="#ffe59b" d="M34 49l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z"/>
+</svg>

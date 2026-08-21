@@ -1,0 +1,28 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# tests and builds
+/coverage
+/test-results
+/playwright-report
+/.next
+/out
+*.tsbuildinfo
+/supabase/.temp
+
+# local and platform state
+.DS_Store
+*.pem
+.vercel
+
+# environment files (keep the example)
+.env*
+!.env.example
+
+# debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">다정수달 모모</title><desc id="desc">청록빛 수달 펫이 하트 돌을 안고 웃는다</desc>
+  <defs><linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#82c8d2"/><stop offset="1" stop-color="#4b94aa"/></linearGradient></defs>
+  <ellipse cx="110" cy="124" rx="59" ry="72" fill="url(#body)"/>
+  <circle cx="66" cy="73" r="24" fill="#4b94aa"/><circle cx="154" cy="73" r="24" fill="#4b94aa"/>
+  <circle cx="110" cy="78" r="54" fill="url(#body)"/>
+  <ellipse cx="110" cy="102" rx="36" ry="29" fill="#e7f2df"/>
+  <ellipse cx="84" cy="78" rx="7" ry="9" fill="#26364d"/><ellipse cx="136" cy="78" rx="7" ry="9" fill="#26364d"/>
+  <circle cx="82" cy="75" r="2.5" fill="white"/><circle cx="134" cy="75" r="2.5" fill="white"/>
+  <ellipse cx="110" cy="95" rx="9" ry="7" fill="#26364d"/>
+  <path d="M99 108q11 13 22 0" fill="none" stroke="#26364d" stroke-width="5" stroke-linecap="round"/>
+  <path fill="#ff9aa8" d="M110 146c-24-22-43 9-25 25l25 22 25-22c18-16-1-47-25-25z"/>
+  <path d="M45 92q-15 2-22 11M46 103q-15 8-18 18M175 92q15 2 22 11M174 103q15 8 18 18" stroke="#34425a" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+</svg>

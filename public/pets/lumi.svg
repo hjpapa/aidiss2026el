@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">반짝여우 루미</title><desc id="desc">주황빛 여우 펫이 반짝이는 꼬리를 흔든다</desc>
+  <defs><linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffbc72"/><stop offset="1" stop-color="#ef7d53"/></linearGradient></defs>
+  <path fill="#ffe6a8" d="M39 42l8 18 20 2-15 13 4 20-17-10-18 10 5-20-16-13 21-2z"/>
+  <path fill="url(#fur)" d="M66 64L43 25l47 24c13-6 28-6 41 0l46-24-22 40c17 17 22 44 10 67-13 27-45 42-75 33-30-9-49-38-43-68 2-13 9-25 19-33z"/>
+  <path fill="#fff1d6" d="M71 111c8-12 22-17 39-8 17-9 31-4 39 8 8 13 1 32-13 41-15 9-37 9-52 0-14-9-21-28-13-41z"/>
+  <ellipse cx="84" cy="93" rx="8" ry="10" fill="#26364d"/><ellipse cx="136" cy="93" rx="8" ry="10" fill="#26364d"/>
+  <circle cx="81" cy="89" r="3" fill="white"/><circle cx="133" cy="89" r="3" fill="white"/>
+  <path d="M102 120q8 8 16 0" fill="none" stroke="#26364d" stroke-width="5" stroke-linecap="round"/>
+  <path fill="url(#fur)" d="M149 150c30-6 50 10 47 29-3 20-32 27-55 14 18-2 24-13 8-43z"/>
+  <path fill="#fff1d6" d="M180 170c7 6 5 13-4 17-8 4-19 4-28-1 12-1 22-5 32-16z"/>
+  <circle cx="184" cy="56" r="6" fill="#ffe37a"/><circle cx="199" cy="77" r="4" fill="#ffe37a"/>
+</svg>
