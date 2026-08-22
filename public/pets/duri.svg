@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">척척비버 두리</title>
+  <desc id="desc">갈색 비버 펫이 작은 자와 톱니바퀴를 들고 있다</desc>
+  <defs>
+    <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#d59a6c"/>
+      <stop offset="1" stop-color="#9a6046"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="46" cy="98" rx="27" ry="35" fill="#8b563f"/>
+  <ellipse cx="174" cy="98" rx="27" ry="35" fill="#8b563f"/>
+  <circle cx="110" cy="116" r="70" fill="url(#fur)"/>
+  <circle cx="71" cy="65" r="20" fill="#a9694d"/>
+  <circle cx="149" cy="65" r="20" fill="#a9694d"/>
+  <circle cx="71" cy="65" r="10" fill="#e8b594"/>
+  <circle cx="149" cy="65" r="10" fill="#e8b594"/>
+  <ellipse cx="110" cy="139" rx="43" ry="35" fill="#efd0af"/>
+  <ellipse cx="84" cy="109" rx="8" ry="10" fill="#26364d"/>
+  <ellipse cx="136" cy="109" rx="8" ry="10" fill="#26364d"/>
+  <circle cx="81" cy="105" r="3" fill="#fff"/>
+  <circle cx="133" cy="105" r="3" fill="#fff"/>
+  <path d="M101 127q9 8 18 0" fill="none" stroke="#26364d" stroke-width="5" stroke-linecap="round"/>
+  <rect x="98" y="132" width="11" height="18" rx="2" fill="#fff"/>
+  <rect x="111" y="132" width="11" height="18" rx="2" fill="#fff"/>
+  <path d="M152 162h47v13h-47z" fill="#ffd45e" stroke="#26364d" stroke-width="3"/>
+  <path d="M161 162v8M171 162v6M181 162v8M191 162v6" stroke="#9c6b22" stroke-width="2"/>
+  <circle cx="48" cy="166" r="22" fill="#75b7b1" stroke="#26364d" stroke-width="3"/>
+  <circle cx="48" cy="166" r="8" fill="#fff"/>
+  <path d="M48 138v10M48 184v10M20 166h10M66 166h10M28 146l7 7M61 179l7 7M28 186l7-7M61 153l7-7" stroke="#26364d" stroke-width="5" stroke-linecap="round"/>
+</svg>

@@ -7,7 +7,7 @@ export const PETS: PetProfile[] = [
     id: "lumi",
     name: "반짝여우 루미",
     shortName: "루미",
-    lens: "가능성·호기심",
+    lens: "먼저 써 보자",
     emoji: "🦊",
     color: "#f3a15f",
     intro: byGrade(
@@ -31,7 +31,7 @@ export const PETS: PetProfile[] = [
     id: "toto",
     name: "든든거북 토토",
     shortName: "토토",
-    lens: "안전·권리",
+    lens: "안전해야 써야 해",
     emoji: "🐢",
     color: "#72a986",
     intro: byGrade(
@@ -55,7 +55,7 @@ export const PETS: PetProfile[] = [
     id: "pori",
     name: "꼼꼼부엉 포리",
     shortName: "포리",
-    lens: "증거·검증",
+    lens: "맞는지 먼저 확인하자",
     emoji: "🦉",
     color: "#8a7bc2",
     intro: byGrade(
@@ -79,7 +79,7 @@ export const PETS: PetProfile[] = [
     id: "momo",
     name: "다정수달 모모",
     shortName: "모모",
-    lens: "공정·관계",
+    lens: "모두에게 공평해야 해",
     emoji: "🦦",
     color: "#60a9bb",
     intro: byGrade(
@@ -97,6 +97,54 @@ export const PETS: PetProfile[] = [
     debateStyle: byGrade(
       "따뜻하게 다른 사람의 느낌과 영향을 묻는다.",
       "특정 편을 비난하지 않고 영향을 받는 사람들의 관점을 묻는다.",
+    ),
+  },
+  {
+    id: "hari",
+    name: "생각토끼 하리",
+    shortName: "하리",
+    lens: "사람이 마지막에 결정해야 해",
+    emoji: "🐰",
+    color: "#e889a8",
+    intro: byGrade(
+      "기계가 도와줘도 마지막 선택과 책임은 사람이 맡아야 해!",
+      "AI가 도와주더라도 중요한 판단과 책임은 사람이 맡아야 해.",
+    ),
+    strength: byGrade(
+      "내가 직접 생각하고 고를 일을 잘 찾아.",
+      "사람의 선택권과 책임이 필요한 지점을 분명히 찾아.",
+    ),
+    watchOut: byGrade(
+      "사람이 언제나 더 정확하다고 생각할 수 있어.",
+      "사람의 실수나 AI가 잘 도울 수 있는 부분을 놓칠 수 있어.",
+    ),
+    debateStyle: byGrade(
+      "누가 마지막으로 고르고 책임질지 묻는다.",
+      "AI의 도움과 사람의 최종 판단을 어떻게 나눌지 질문한다.",
+    ),
+  },
+  {
+    id: "duri",
+    name: "척척비버 두리",
+    shortName: "두리",
+    lens: "규칙을 정해 쓰자",
+    emoji: "🦫",
+    color: "#b27a55",
+    intro: byGrade(
+      "좋은 점은 살리고 걱정은 줄이는 약속을 만들자!",
+      "기술을 무조건 허용하거나 금지하기보다 사용할 조건과 규칙을 만들자.",
+    ),
+    strength: byGrade(
+      "언제, 누가, 어떻게 쓸지 약속을 잘 만들어.",
+      "이익과 위험을 함께 보고 실행할 수 있는 조건을 제안해.",
+    ),
+    watchOut: byGrade(
+      "규칙만 있으면 문제가 다 해결된다고 생각할 수 있어.",
+      "규칙을 실제로 지킬 방법과 책임자를 놓칠 수 있어.",
+    ),
+    debateStyle: byGrade(
+      "사용할 수 있는 조건과 지킬 약속을 묻는다.",
+      "구체적인 사용 범위, 확인 방법, 책임자를 질문한다.",
     ),
   },
 ];

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { PetAvatar } from "@/components/PetAvatar";
 import { ThinkingFootprints } from "@/components/ThinkingFootprints";
+import { getConceptDefinition } from "@/data/glossary";
 import { PET_BY_ID } from "@/data/pets";
 import { TOPIC_BY_ID } from "@/data/topics";
 import { AppApiError, sendChat } from "@/lib/api-client";
@@ -48,6 +49,7 @@ function ChatBubble({ message, session }: { message: DebateMessage; session: Loc
 export function DebateArena({ session, onChange, onReflect, onDelete }: DebateArenaProps) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pendingLearner, setPendingLearner] = useState<DebateMessage | null>(null);
   const [error, setError] = useState("");
   const [visibleCount, setVisibleCount] = useState(100);
   const [showLatestButton, setShowLatestButton] = useState(false);
@@ -88,7 +90,7 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
     } else {
       setShowLatestButton(true);
     }
-  }, [allVisibleMessages.length]);
+  }, [allVisibleMessages.length, pendingLearner]);
 
   const submit = async () => {
     const content = input.trim();
@@ -96,7 +98,17 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
     const pending = pendingRequestRef.current;
     const requestId = pending?.content === content ? pending.requestId : crypto.randomUUID();
     pendingRequestRef.current = { content, requestId };
+    const optimisticMessage: DebateMessage = {
+      id: `pending-${requestId}`,
+      requestId,
+      role: "learner",
+      kind: "move",
+      content,
+      createdAt: new Date().toISOString(),
+    };
     stickToBottomRef.current = true;
+    setPendingLearner(optimisticMessage);
+    setInput("");
     setBusy(true);
     setError("");
     try {
@@ -129,10 +141,12 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
         reviewId: undefined,
         finalReflection: undefined,
       };
+      setPendingLearner(null);
       await onChange(next);
       pendingRequestRef.current = null;
-      setInput("");
     } catch (cause) {
+      setPendingLearner(null);
+      setInput((currentValue) => currentValue || content);
       setError(cause instanceof AppApiError ? cause.message : "메시지를 보내지 못했어요. 입력은 그대로 남아 있어요.");
     } finally {
       setBusy(false);
@@ -202,6 +216,9 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
               <li className="history-loader"><button type="button" onClick={() => setVisibleCount((count) => count + 100)}>이전 대화 더 보기</button></li>
             ) : null}
             {visibleMessages.map((message) => <ChatBubble key={message.id} message={message} session={session} />)}
+            {pendingLearner ? (
+              <ChatBubble key={pendingLearner.id} message={pendingLearner} session={session} />
+            ) : null}
             {busy ? (
               <li className="thinking-row" aria-live="polite">
                 <PetAvatar petId={opponentPet.id} size="small" />
@@ -241,7 +258,7 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
             <div className="composer-footer">
               <small id="composer-help">Ctrl/⌘ + Enter로도 보낼 수 있어요 · {input.length}/800</small>
               <button type="button" className="send-button" disabled={!input.trim() || busy} onClick={() => void submit()}>
-                {busy ? "생각 중…" : "말하기"}<span aria-hidden="true">➤</span>
+                {busy ? "보내는 중…" : "말하기"}<span aria-hidden="true">➤</span>
               </button>
             </div>
           </div>
@@ -249,7 +266,15 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
         </main>
 
         <aside className="thinking-sidebar">
-          <ThinkingFootprints state={session.state} gradeBand={session.setup.gradeBand} onEvidenceClick={jumpToEvidence} />
+          <ThinkingFootprints
+            state={session.state}
+            gradeBand={session.setup.gradeBand}
+            onEvidenceClick={jumpToEvidence}
+            onUseStarter={(starter) => {
+              setInput((currentValue) => currentValue || starter);
+              document.getElementById("debate-input")?.focus();
+            }}
+          />
           <section className="hint-card" aria-labelledby="hint-title">
             <div className="hint-pet"><PetAvatar petId={learnerPet.id} size="small" /><span><small>우리 팀 힌트</small><strong id="hint-title">{learnerPet.shortName}가 살짝 알려줘요</strong></span></div>
             <p>{latestHint?.content ?? topic.technicalCore[session.setup.gradeBand]}</p>
@@ -257,7 +282,15 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
           </section>
           <section className="concept-card">
             <span className="eyebrow">기술 낱말</span>
-            <div className="concept-chips">{topic.concepts.map((concept) => <span key={concept}>{concept}</span>)}</div>
+            <p className="concept-intro">낯선 낱말을 누르면 쉬운 뜻을 볼 수 있어요.</p>
+            <div className="concept-chips">
+              {topic.concepts.map((concept) => (
+                <details key={concept} className="concept-chip">
+                  <summary>{concept}<span aria-hidden="true">?</span></summary>
+                  <p>{getConceptDefinition(concept, session.setup.gradeBand)}</p>
+                </details>
+              ))}
+            </div>
           </section>
           <section className={`reflection-gate ${ready ? "is-ready" : ""}`} aria-live="polite">
             {ready ? (

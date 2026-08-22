@@ -1,5 +1,5 @@
 export type GradeBand = "g34" | "g56";
-export type PetId = "lumi" | "toto" | "pori" | "momo";
+export type PetId = "lumi" | "toto" | "pori" | "momo" | "hari" | "duri";
 export type TopicId =
   | "ai-answer-trust"
   | "ai-opinion"

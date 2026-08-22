@@ -68,12 +68,81 @@ export const TYPE_QUIZ: QuizQuestion[] = [
       { petId: "momo", text: byGrade("영상 속 친구가 받을 피해를 생각해.", "당사자와 주변 사람이 받을 영향을 고려한다.") },
     ],
   },
+  {
+    id: "hari-duri-choice",
+    situation: byGrade(
+      "AI가 학교 축제 놀이를 골라 줬어.",
+      "AI가 학교 축제 프로그램을 추천했어.",
+    ),
+    options: [
+      {
+        petId: "hari",
+        text: byGrade(
+          "마지막 선택은 학생들이 직접 해야 해.",
+          "최종 선택은 학생들이 해야 한다.",
+        ),
+      },
+      {
+        petId: "duri",
+        text: byGrade(
+          "고르는 규칙을 먼저 정하고 AI를 쓰자.",
+          "추천 기준과 바꾸는 방법을 먼저 정한다.",
+        ),
+      },
+    ],
+  },
+  {
+    id: "hari-duri-responsibility",
+    situation: byGrade(
+      "AI가 과제에 고칠 점을 알려 줬어.",
+      "AI가 학생 과제에 중요한 의견을 냈어.",
+    ),
+    options: [
+      {
+        petId: "hari",
+        text: byGrade(
+          "선생님이 보고 마지막 판단을 해야 해.",
+          "교사가 최종 판단과 책임을 맡아야 한다.",
+        ),
+      },
+      {
+        petId: "duri",
+        text: byGrade(
+          "AI와 선생님이 맡을 일을 나누자.",
+          "AI와 교사의 역할과 확인 순서를 정한다.",
+        ),
+      },
+    ],
+  },
+  {
+    id: "hari-duri-control",
+    situation: byGrade(
+      "AI가 내 사진을 바꾸려 해. 먼저 뭘 할까?",
+      "AI가 내 사진을 바꾸고 공유하려 해.",
+    ),
+    options: [
+      {
+        petId: "hari",
+        text: byGrade(
+          "내 사진이니 내가 직접 허락해야 해.",
+          "사진 주인이 편집과 공유를 선택해야 한다.",
+        ),
+      },
+      {
+        petId: "duri",
+        text: byGrade(
+          "저장할 곳과 지울 때를 약속하자.",
+          "저장·사용·삭제 규칙을 먼저 정한다.",
+        ),
+      },
+    ],
+  },
 ];
 
 export function calculatePetResult(answers: PetId[]): { winner?: PetId; tied: PetId[] } {
   const scores = answers.reduce<Record<PetId, number>>(
     (acc, petId) => ({ ...acc, [petId]: acc[petId] + 1 }),
-    { lumi: 0, toto: 0, pori: 0, momo: 0 },
+    { lumi: 0, toto: 0, pori: 0, momo: 0, hari: 0, duri: 0 },
   );
   const high = Math.max(...Object.values(scores));
   const tied = (Object.keys(scores) as PetId[]).filter((id) => scores[id] === high);

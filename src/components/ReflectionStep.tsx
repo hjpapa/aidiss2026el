@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { PetAvatar } from "@/components/PetAvatar";
 import { PET_BY_ID } from "@/data/pets";
+import { READINESS_CRITERIA } from "@/data/readiness";
 import { TOPIC_BY_ID } from "@/data/topics";
 import { AppApiError, createReview, submitReflection } from "@/lib/api-client";
 import { collectEvidenceMessageIds } from "@/lib/readiness";
@@ -68,7 +69,7 @@ function ReflectionFields({
         <textarea id={`${idPrefix}-counterpoint`} rows={3} maxLength={600} value={value.hardestCounterpoint} onChange={(event) => onChange({ ...value, hardestCounterpoint: event.target.value })} placeholder="…라는 의견을 듣고 고민했다." />
       </label>
       <label className="reflection-field" htmlFor={`${idPrefix}-technical`}>
-        <span><strong>기술이 작동하는 방식</strong><small>데이터, 알고리즘, 결과를 연결해 봐요.</small></span>
+        <span><strong>기술이 작동하는 방식</strong><small>무엇을 받아서, 어떻게 바꾸고, 어떤 결과를 내는지 적어요.</small></span>
         <textarea id={`${idPrefix}-technical`} rows={3} maxLength={600} value={value.technicalUnderstanding} onChange={(event) => onChange({ ...value, technicalUnderstanding: event.target.value })} placeholder="이 기술은 …을 입력받아 …해서 …을 만든다." />
       </label>
     </div>
@@ -83,6 +84,7 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
   const [draft, setDraft] = useState<ReflectionDraft>(session.reflectionDraft ?? EMPTY_DRAFT);
   const [finalDraft, setFinalDraft] = useState<ReflectionDraft>(session.finalReflection ?? session.reflectionDraft ?? EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
+  const [showDraft, setShowDraft] = useState(Boolean(session.reflectionDraft));
   const [error, setError] = useState("");
   const reviewRequestRef = useRef<{ fingerprint: string; requestId: string } | null>(null);
   const finalRequestRef = useRef<{ fingerprint: string; requestId: string } | null>(null);
@@ -109,6 +111,21 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
     }
     return debateMoves.filter((message) => selected.has(message.id));
   }, [debateMoves, session.state]);
+  const conversationEvidence = useMemo(
+    () =>
+      READINESS_CRITERIA.map((definition) => {
+        const status = session.state.readiness.find((item) => item.id === definition.id);
+        const evidence = status?.evidence[0];
+        const message = evidence
+          ? debateMoves.find((item) => item.id === evidence.messageId)
+          : undefined;
+        return {
+          definition,
+          quote: evidence?.quote ?? message?.content ?? "",
+        };
+      }),
+    [debateMoves, session.state],
+  );
 
   const requestReview = async () => {
     if (!draftComplete(draft) || busy) return;
@@ -192,10 +209,70 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
     );
   }
 
+  if (!showDraft && !session.reflectionDraft) {
+    return (
+      <main className="reflection-page">
+        <header className="reflection-header">
+          <span className="eyebrow">성찰 1단계</span>
+          <h1>먼저, 내가 나눈 대화를 돌아봐요</h1>
+          <p>AI가 찾은 내용이 내 뜻과 같은지 실제 내 말을 보며 확인해요.</p>
+        </header>
+        <section className="conversation-review-card">
+          <div className="reflection-topic">
+            <span aria-hidden="true">{topic.icon}</span>
+            <div>
+              <small>토론 주제</small>
+              <strong>{topic.title[session.setup.gradeBand]}</strong>
+            </div>
+          </div>
+          <div className="analysis-guide">
+            <PetAvatar petId={pet.id} size="small" />
+            <p>
+              아래 따옴표는 내가 실제로 한 말이에요. 그 밖의 요약은 AI가 읽은
+              내용이라서 틀릴 수 있어요.
+            </p>
+          </div>
+          <ul className="conversation-evidence-list">
+            {conversationEvidence.map(({ definition, quote }) => (
+              <li key={definition.id}>
+                <span aria-hidden="true">{definition.icon}</span>
+                <div>
+                  <strong>{definition.shortLabel}</strong>
+                  <small>{definition.label[session.setup.gradeBand]}</small>
+                  <blockquote>
+                    {quote ? `“${quote}”` : "아직 연결된 내 말을 찾지 못했어요."}
+                  </blockquote>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <section className="ai-reading-card" aria-labelledby="ai-reading-title">
+            <span className="review-label">AI가 읽은 생각의 흐름</span>
+            <h2 id="ai-reading-title">지금 내 입장은 이렇게 보였어요</h2>
+            <p>
+              {session.state.currentPosition ||
+                session.state.summary ||
+                "아직 한 문장으로 정리하기 어려워요."}
+            </p>
+            <small>내 뜻과 다르면 다음 단계에서 내 말로 바로잡으면 돼요.</small>
+          </section>
+          <div className="reflection-actions">
+            <button type="button" className="secondary-button" onClick={onBackToDebate}>
+              토론 더 하기
+            </button>
+            <button type="button" className="primary-button" onClick={() => setShowDraft(true)}>
+              대화를 확인했어요 · 내 생각 정리하기
+            </button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (session.review && session.reflectionDraft) {
     return (
       <main className="reflection-page">
-        <header className="reflection-header"><span className="eyebrow">성찰 2단계</span><h1>AI의 검토를 참고해 내 말로 완성해요</h1><p>AI 해석은 정답이 아니에요. 맞지 않으면 따르지 않아도 됩니다.</p></header>
+        <header className="reflection-header"><span className="eyebrow">성찰 3단계</span><h1>AI의 검토를 참고해 내 말로 완성해요</h1><p>AI 해석은 정답이 아니에요. 맞지 않으면 따르지 않아도 됩니다.</p></header>
         <div className="review-layout">
           <section className="review-card review-card--said">
             <span className="review-label">학생이 실제로 말한 것</span>
@@ -224,7 +301,7 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
 
   return (
     <main className="reflection-page">
-      <header className="reflection-header"><span className="eyebrow">성찰 1단계</span><h1>AI의 말을 보기 전에 내 생각부터 적어요</h1><p>토론 전과 생각이 같아도, 달라져도 괜찮아요. 중요한 것은 이유예요.</p></header>
+      <header className="reflection-header"><span className="eyebrow">성찰 2단계</span><h1>이제 내 생각을 내 말로 적어요</h1><p>방금 본 대화와 AI의 요약이 내 뜻과 달랐다면 여기에서 바로잡아 주세요.</p></header>
       <section className="draft-card">
         <div className="reflection-topic"><span aria-hidden="true">{topic.icon}</span><div><small>토론 주제</small><strong>{topic.title[session.setup.gradeBand]}</strong></div></div>
         <ReflectionFields value={draft} onChange={setDraft} idPrefix="draft" />

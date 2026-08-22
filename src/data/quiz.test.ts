@@ -9,7 +9,7 @@ describe("pet perspective quiz", () => {
       {},
     );
 
-    expect(appearances).toEqual({ lumi: 3, toto: 3, pori: 3, momo: 3 });
+    expect(appearances).toEqual({ lumi: 3, toto: 3, pori: 3, momo: 3, hari: 3, duri: 3 });
   });
 
   it("returns one winner without pretending a tie is a diagnosis", () => {

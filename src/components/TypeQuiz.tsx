@@ -18,7 +18,7 @@ export function TypeQuiz({ gradeBand, onComplete, onBack }: TypeQuizProps) {
   const [answers, setAnswers] = useState<PetId[]>([]);
   const [ties, setTies] = useState<PetId[]>([]);
   const question = TYPE_QUIZ[index];
-  const progress = useMemo(() => Math.round((index / TYPE_QUIZ.length) * 100), [index]);
+  const progress = useMemo(() => Math.round(((index + 1) / TYPE_QUIZ.length) * 100), [index]);
 
   const choose = (petId: PetId) => {
     const next = [...answers, petId];

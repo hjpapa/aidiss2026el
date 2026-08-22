@@ -12,6 +12,9 @@ test("a learner can debate without a turn cap and complete evidence-based reflec
   await page.locator(".quiz-option").first().click();
   await page.locator(".quiz-option").first().click();
   await page.locator(".quiz-option").first().click();
+  await page.getByRole("button", { name: /하리의 생각/ }).click();
+  await page.getByRole("button", { name: /두리의 생각/ }).click();
+  await page.getByRole("button", { name: /하리의 생각/ }).click();
 
   await expect(page.getByRole("heading", { name: /루미와 한 팀이에요/ })).toBeVisible();
   await page.getByRole("radio", { name: /AI 답이 그럴듯하면/ }).check();
@@ -38,6 +41,8 @@ test("a learner can debate without a turn cap and complete evidence-based reflec
 
   await expect(page.getByRole("heading", { name: "다섯 발자국을 모두 찾았어요!" })).toBeVisible();
   await page.getByRole("button", { name: "성찰하러 가기" }).click();
+  await expect(page.getByRole("heading", { name: "먼저, 내가 나눈 대화를 돌아봐요" })).toBeVisible();
+  await page.getByRole("button", { name: /내 생각 정리하기/ }).click();
 
   await page.getByLabel("내 생각과 까닭").fill("나는 AI 답을 참고할 수 있지만 다른 자료와 비교해야 한다고 생각한다.");
   await page.getByLabel("가장 고민된 반대 의견").fill("AI가 빠르게 답을 준다는 의견이 가장 고민되었다.");

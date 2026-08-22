@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">생각토끼 하리</title>
+  <desc id="desc">분홍빛 토끼 펫이 연필을 들고 생각한다</desc>
+  <defs>
+    <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#ffd2df"/>
+      <stop offset="1" stop-color="#e889a8"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="76" cy="51" rx="22" ry="48" fill="url(#fur)" transform="rotate(-11 76 51)"/>
+  <ellipse cx="144" cy="51" rx="22" ry="48" fill="url(#fur)" transform="rotate(11 144 51)"/>
+  <ellipse cx="77" cy="51" rx="9" ry="31" fill="#fff0f5"/>
+  <ellipse cx="143" cy="51" rx="9" ry="31" fill="#fff0f5"/>
+  <circle cx="110" cy="118" r="69" fill="url(#fur)"/>
+  <ellipse cx="110" cy="137" rx="42" ry="34" fill="#fff4f7"/>
+  <ellipse cx="84" cy="108" rx="8" ry="10" fill="#26364d"/>
+  <ellipse cx="136" cy="108" rx="8" ry="10" fill="#26364d"/>
+  <circle cx="81" cy="104" r="3" fill="#fff"/>
+  <circle cx="133" cy="104" r="3" fill="#fff"/>
+  <path d="M103 126q7 7 14 0" fill="none" stroke="#26364d" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="70" cy="128" r="8" fill="#f7a7bd" opacity=".7"/>
+  <circle cx="150" cy="128" r="8" fill="#f7a7bd" opacity=".7"/>
+  <path d="M157 157l31-46 10 7-34 44z" fill="#ffd45e" stroke="#26364d" stroke-width="3"/>
+  <path d="M188 111l6-9 10 7-6 9z" fill="#f07c73"/>
+  <path d="M157 157l-3 13 10-8z" fill="#26364d"/>
+  <path d="M57 45l-13-8M168 37l12-12M111 26V10" stroke="#ffd45e" stroke-width="6" stroke-linecap="round"/>
+</svg>

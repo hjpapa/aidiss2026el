@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const GradeBandSchema = z.enum(["g34", "g56"]);
-export const PetIdSchema = z.enum(["lumi", "toto", "pori", "momo"]);
+export const PetIdSchema = z.enum(["lumi", "toto", "pori", "momo", "hari", "duri"]);
 export const TopicIdSchema = z.enum([
   "ai-answer-trust",
   "ai-opinion",

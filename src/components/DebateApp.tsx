@@ -137,7 +137,7 @@ export function DebateApp() {
             <p>내 관점과 닮은 펫을 만나고, AI와 디지털 기술이 어떻게 작동하는지 다른 입장의 펫과 천천히 토론해요.</p>
             <div className="hero-badges"><span>횟수 제한 없음</span><span>승패 없는 토론</span><span>마지막 내 말로 성찰</span></div>
           </div>
-          <div className="hero-pets" aria-label="네 마리 토론 펫">
+          <div className="hero-pets" aria-label="여섯 마리 토론 펫">
             {PETS.map((pet, index) => <div key={pet.id} className={`hero-pet hero-pet--${index + 1}`}><PetAvatar petId={pet.id} size="large" /><span>{pet.shortName}</span></div>)}
             <div className="hero-speech">“기술은 왜<br />그렇게 움직일까?”</div>
           </div>
