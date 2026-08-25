@@ -2,6 +2,9 @@ import { z } from "zod";
 
 export const GradeBandSchema = z.enum(["g34", "g56"]);
 export const PetIdSchema = z.enum(["lumi", "toto", "pori", "momo", "hari", "duri"]);
+export const EthicsPrincipleIdSchema = z.enum(["human_dignity", "social_good", "technical_purpose"]);
+export const EthicsSensitivityIdSchema = z.enum(["situation", "consequence", "empathy", "responsibility"]);
+export const AnalysisLevelSchema = z.enum(["clear", "some", "next"]);
 export const TopicIdSchema = z.enum([
   "ai-answer-trust",
   "ai-opinion",
@@ -125,6 +128,30 @@ export const ReviewResultSchema = z.object({
     )
     .min(1)
     .max(3),
+  ethicsAnalysis: z.object({
+    primaryPrinciple: EthicsPrincipleIdSchema,
+    summary: z.string().min(1).max(700),
+    principleSignals: z
+      .array(
+        z.object({
+          id: EthicsPrincipleIdSchema,
+          level: AnalysisLevelSchema,
+          explanation: z.string().min(1).max(400),
+          evidence: z.array(EvidenceSchema).max(2),
+        }),
+      )
+      .length(3),
+    sensitivitySignals: z
+      .array(
+        z.object({
+          id: EthicsSensitivityIdSchema,
+          level: AnalysisLevelSchema,
+          explanation: z.string().min(1).max(400),
+          evidence: z.array(EvidenceSchema).max(2),
+        }),
+      )
+      .length(4),
+  }),
   feedback: z.string().min(1).max(700),
   sentenceStarters: z.array(z.string().min(1).max(140)).max(3),
 });

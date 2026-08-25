@@ -1,10 +1,11 @@
+import { ETHICS_PRINCIPLES, ETHICS_SENSITIVITY } from "@/data/ethics-framework";
 import { PET_BY_ID } from "@/data/pets";
 import { READINESS_CRITERIA } from "@/data/readiness";
 import { TOPIC_BY_ID } from "@/data/topics";
 import type { DebateMessage, DebateState, ReflectionDraft, SessionSetup } from "@/types/debate";
 
-export const CHAT_PROMPT_VERSION = "chat-v1.1.0";
-export const REVIEW_PROMPT_VERSION = "review-v1.1.0";
+export const CHAT_PROMPT_VERSION = "chat-v1.2.0";
+export const REVIEW_PROMPT_VERSION = "review-v1.2.0";
 
 const gradeName = { g34: "초등 3~4학년", g56: "초등 5~6학년" } as const;
 
@@ -30,9 +31,12 @@ export function buildChatPrompt(
 - 기술 낱말이 꼭 필요하면 먼저 쉬운 말로 설명하고 괄호 안에 낱말을 한 번만 적으세요.
 - 학생이 아직 말하지 않은 어려운 개념을 한꺼번에 여러 개 소개하지 마세요.
 - 예시는 학교, 숙제, 영상, 게임처럼 어린이가 아는 생활 장면으로 드세요.
-상대 펫 관점: ${opponentPet.lens} — ${opponentPet.debateStyle[setup.gradeBand]}
-학생 팀 펫: ${learnerPet.name} — ${learnerPet.lens}
+상대 펫 역할: ${opponentPet.roleName[setup.gradeBand]} (${opponentPet.principleName[setup.gradeBand]}) — ${opponentPet.lens}
+상대 펫 질문 방식: ${opponentPet.debateStyle[setup.gradeBand]}
+학생 팀 펫 역할: ${learnerPet.roleName[setup.gradeBand]} (${learnerPet.principleName[setup.gradeBand]}) — ${learnerPet.lens}
 토론 주제: ${topic.title[setup.gradeBand]}
+딜레마 장면: ${topic.scenario[setup.gradeBand]}
+부딪히는 가치: ${topic.valueConflict[setup.gradeBand]}
 학생의 처음 입장: ${stance}
 기술적 바탕: ${topic.technicalCore[setup.gradeBand]}
 핵심 개념: ${topic.concepts.join(", ")}
@@ -95,7 +99,22 @@ export function buildReviewPrompt(
 
 systemInferred는 주장과 근거 같은 논증 구조만 다루고 성격·지능·감정 상태·가정형편·민감정보를 추론하지 마세요.
 학생의 완성 문장을 대신 써주지 마세요. sentenceStarters는 빈칸이나 이어 쓰기 형태의 시작말만 제공하세요. 이름·학교·연락처를 요구하지 마세요.
+
+ethicsAnalysis는 점수나 성격 진단이 아니라 이번 대화에서 확인한 생각의 흔적입니다.
+- principleSignals에는 human_dignity, social_good, technical_purpose를 각각 정확히 한 번씩 넣으세요.
+- sensitivitySignals에는 situation, consequence, empathy, responsibility를 각각 정확히 한 번씩 넣으세요.
+- clear는 서로 다른 학생 발언에서 분명한 근거가 확인될 때, some은 근거 한 개가 부분적으로 확인될 때, next는 믿을 만한 근거가 없을 때만 사용하세요.
+- clear와 some에는 실제 learner/move 메시지의 정확한 인용을 evidence에 넣고, next의 evidence는 빈 배열로 두세요.
+- primaryPrinciple은 세 가치 중 학생이 실제 발언에서 가장 자주 또는 분명히 사용한 하나입니다. 학생의 고정 성격이라고 표현하지 마세요.
+- explanation과 summary는 관찰한 발언만 설명하고 높고 낮음, 우수함, 부족함 같은 서열 표현을 쓰지 마세요.
+가치 기준:
+${ETHICS_PRINCIPLES.map((item) => `- ${item.id}: ${item.explanation[setup.gradeBand]}`).join("\n")}
+생각 과정 기준:
+${ETHICS_SENSITIVITY.map((item) => `- ${item.id}: ${item.explanation[setup.gradeBand]}`).join("\n")}
+
 주제: ${topic.title[setup.gradeBand]}
+딜레마 장면: ${topic.scenario[setup.gradeBand]}
+부딪히는 가치: ${topic.valueConflict[setup.gradeBand]}
 기술적 바탕: ${topic.technicalCore[setup.gradeBand]}`,
     input: JSON.stringify({
       debateState: state,

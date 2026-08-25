@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { HomeBrand } from "@/components/HomeBrand";
 import { PetAvatar } from "@/components/PetAvatar";
 import { ThinkingFootprints } from "@/components/ThinkingFootprints";
 import { getConceptDefinition } from "@/data/glossary";
@@ -14,6 +15,7 @@ import type { DebateMessage, LocalDebateSession } from "@/types/debate";
 interface DebateArenaProps {
   session: LocalDebateSession;
   onChange: (session: LocalDebateSession) => Promise<void>;
+  onHome: () => void;
   onReflect: () => void;
   onDelete: () => void;
 }
@@ -46,7 +48,7 @@ function ChatBubble({ message, session }: { message: DebateMessage; session: Loc
   );
 }
 
-export function DebateArena({ session, onChange, onReflect, onDelete }: DebateArenaProps) {
+export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: DebateArenaProps) {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [pendingLearner, setPendingLearner] = useState<DebateMessage | null>(null);
@@ -173,7 +175,7 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
   return (
     <div className="debate-page">
       <header className="arena-header">
-        <div className="arena-brand"><span aria-hidden="true">🐾</span><strong>AI윤리 펫토론</strong></div>
+        <HomeBrand onHome={onHome} className="arena-brand" />
         <div className="arena-topic"><span>{topic.icon}</span><strong>{topic.title[session.setup.gradeBand]}</strong></div>
         <button type="button" className="quiet-button danger-text" disabled={busy} onClick={onDelete}>기록 삭제</button>
       </header>
@@ -194,13 +196,17 @@ export function DebateArena({ session, onChange, onReflect, onDelete }: DebateAr
         <main className="conversation-card">
           <div className="conversation-toolbar">
             <div>
-              <span className="eyebrow">토론 대화</span>
-              <h1>내 말로 생각을 펼쳐요</h1>
+              <span className="eyebrow">오늘의 윤리 딜레마</span>
+              <h1>두 가지 소중한 것 사이에서 생각해요</h1>
             </div>
             <span className={`persistence-pill persistence-pill--${session.persistence}`}>
               {session.persistence === "stored" ? "서버에도 안전하게 저장 중" : "이 기기에 임시 저장 중"}
             </span>
           </div>
+          <section className="dilemma-brief" aria-label="토론할 윤리 딜레마">
+            <p>{topic.scenario[session.setup.gradeBand]}</p>
+            <strong>{topic.valueConflict[session.setup.gradeBand]}</strong>
+          </section>
           <ol
             className="chat-transcript"
             aria-label="토론 대화"

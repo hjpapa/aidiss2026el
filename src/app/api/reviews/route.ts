@@ -182,7 +182,29 @@ export async function POST(request: Request) {
     const invalidInference = generated.result.systemInferred.some((item) =>
       item.basedOnMessageIds.some((id) => !validLearnerIds.has(id)),
     );
-    if (invalidEvidence || invalidInference) {
+    const analysisSignals = [
+      ...generated.result.ethicsAnalysis.principleSignals,
+      ...generated.result.ethicsAnalysis.sensitivitySignals,
+    ];
+    const invalidAnalysisEvidence = analysisSignals.some((item) => {
+      if (item.level === "next") return item.evidence.length > 0;
+      return (
+        item.evidence.length === 0 ||
+        item.evidence.some((evidence) => !isValidEvidence(evidence, evidenceMessages))
+      );
+    });
+    const principleIds = new Set(
+      generated.result.ethicsAnalysis.principleSignals.map((item) => item.id),
+    );
+    const sensitivityIds = new Set(
+      generated.result.ethicsAnalysis.sensitivitySignals.map((item) => item.id),
+    );
+    const invalidAnalysisShape =
+      principleIds.size !== 3 ||
+      !(["human_dignity", "social_good", "technical_purpose"] as const).every((id) => principleIds.has(id)) ||
+      sensitivityIds.size !== 4 ||
+      !(["situation", "consequence", "empathy", "responsibility"] as const).every((id) => sensitivityIds.has(id));
+    if (invalidEvidence || invalidInference || invalidAnalysisEvidence || invalidAnalysisShape) {
       await failClaim("invalid_evidence");
       return apiError("invalid_evidence", "AI 검토의 근거를 확인하지 못했어요. 다시 생성해 주세요.", 502);
     }

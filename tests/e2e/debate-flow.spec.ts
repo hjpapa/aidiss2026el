@@ -6,22 +6,27 @@ test("a learner can debate without a turn cap and complete evidence-based reflec
   await page.getByLabel(/안전 약속을 확인했어요/).check();
   await page.getByRole("button", { name: /내 생각 친구 찾기/ }).click();
 
-  await page.getByRole("button", { name: /루미의 생각/ }).click();
-  await page.getByRole("button", { name: /루미의 생각/ }).click();
-  await page.getByRole("button", { name: /루미의 생각/ }).click();
+  await page.getByRole("button", { name: /루미 · 쓸모 탐험가/ }).click();
+  await page.getByRole("button", { name: /루미 · 쓸모 탐험가/ }).click();
+  await page.getByRole("button", { name: /루미 · 쓸모 탐험가/ }).click();
   await page.locator(".quiz-option").first().click();
   await page.locator(".quiz-option").first().click();
   await page.locator(".quiz-option").first().click();
-  await page.getByRole("button", { name: /하리의 생각/ }).click();
-  await page.getByRole("button", { name: /두리의 생각/ }).click();
-  await page.getByRole("button", { name: /하리의 생각/ }).click();
+  await page.getByRole("button", { name: /하리 · 선택 길잡이/ }).click();
+  await page.getByRole("button", { name: /두리 · 함께 약속 설계자/ }).click();
+  await page.getByRole("button", { name: /하리 · 선택 길잡이/ }).click();
 
   await expect(page.getByRole("heading", { name: /루미와 한 팀이에요/ })).toBeVisible();
-  await page.getByRole("radio", { name: /AI 답이 그럴듯하면/ }).check();
+  await page.getByRole("radio", { name: /숙제 마감 10분 전/ }).check();
   await page.locator('.stance-options input[value="a"]').check();
   await page.getByRole("radio", { name: /토토/ }).click();
   await page.getByRole("button", { name: "펫 토론 시작하기" }).click();
 
+
+  await page.getByRole("button", { name: "AI윤리 펫토론 처음 화면으로" }).click();
+  await expect(page.getByRole("heading", { name: /귀여운 펫과 함께/ })).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("내 생각 입력")).toBeVisible();
   const composer = page.getByLabel("내 생각 입력");
   const moves = [
     "AI는 많은 글의 규칙을 데이터에서 찾아 다음 낱말을 예상해 답을 만들어요.",
@@ -51,5 +56,7 @@ test("a learner can debate without a turn cap and complete evidence-based reflec
 
   await expect(page.getByRole("heading", { name: /AI의 검토를 참고해/ })).toBeVisible();
   await page.getByRole("button", { name: "내 말로 최종 확정하기" }).click();
-  await expect(page.getByRole("heading", { name: /나의 기술 관점/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /나의 AI 윤리 관점/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "내가 실제로 한 말에서 찾았어요" })).toBeVisible();
+  await expect(page.getByText("점수·승패 아님")).toBeVisible();
 });

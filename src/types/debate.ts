@@ -1,5 +1,8 @@
 export type GradeBand = "g34" | "g56";
 export type PetId = "lumi" | "toto" | "pori" | "momo" | "hari" | "duri";
+export type EthicsPrincipleId = "human_dignity" | "social_good" | "technical_purpose";
+export type EthicsSensitivityId = "situation" | "consequence" | "empathy" | "responsibility";
+export type AnalysisLevel = "clear" | "some" | "next";
 export type TopicId =
   | "ai-answer-trust"
   | "ai-opinion"
@@ -30,12 +33,16 @@ export interface PetProfile {
   name: string;
   shortName: string;
   lens: string;
+  roleName: ByGrade;
+  principleId: EthicsPrincipleId;
+  principleName: ByGrade;
   emoji: string;
   color: string;
   intro: ByGrade;
   strength: ByGrade;
   watchOut: ByGrade;
   debateStyle: ByGrade;
+  guidingQuestion: ByGrade;
 }
 
 export interface QuizOption {
@@ -63,6 +70,9 @@ export interface DebateTopic {
   category: "ai" | "digital";
   title: ByGrade;
   shortDescription: ByGrade;
+  scenario: ByGrade;
+  valueConflict: ByGrade;
+  principlePair: [EthicsPrincipleId, EthicsPrincipleId];
   stanceA: ByGrade;
   stanceB: ByGrade;
   technicalCore: ByGrade;
@@ -126,6 +136,22 @@ export interface ReviewResult {
     explanation: string;
     evidence: EvidenceRef[];
   }>;
+  ethicsAnalysis: {
+    primaryPrinciple: EthicsPrincipleId;
+    summary: string;
+    principleSignals: Array<{
+      id: EthicsPrincipleId;
+      level: AnalysisLevel;
+      explanation: string;
+      evidence: EvidenceRef[];
+    }>;
+    sensitivitySignals: Array<{
+      id: EthicsSensitivityId;
+      level: AnalysisLevel;
+      explanation: string;
+      evidence: EvidenceRef[];
+    }>;
+  };
   systemInferred: Array<{
     interpretation: string;
     confidence: "low" | "medium" | "high";

@@ -20,14 +20,15 @@ export function ThinkingFootprints({
       <div className="section-heading-row">
         <div>
           <span className="eyebrow">생각 발자국</span>
-          <h2 id="footprints-title">다섯 방향으로 살펴봐요</h2>
+          <h2 id="footprints-title">기술과 윤리를 다섯 방향으로 봐요</h2>
         </div>
         <span className="progress-count" aria-label={`다섯 항목 중 ${completed}개 완료`}>
           {completed}/5
         </span>
       </div>
       <p className="footprints-intro">
-        정답을 맞히는 미션이 아니에요. 한 가지 문제를 여러 방향에서 보는 생각 지도예요.
+        기술 원리, 생길 결과, 다른 사람의 처지, 다른 관점, 책임 있는 선택을
+        차례로 살피는 생각 지도예요. 정답 맞히기 미션이 아니에요.
       </p>
       <ul className="footprint-list">
         {READINESS_CRITERIA.map((definition) => {

@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 
 import { DebateArena } from "@/components/DebateArena";
+import { HomeBrand } from "@/components/HomeBrand";
 import { PetAvatar } from "@/components/PetAvatar";
 import { ReflectionStep } from "@/components/ReflectionStep";
 import { SetupStep } from "@/components/SetupStep";
 import { TypeQuiz } from "@/components/TypeQuiz";
+import { ETHICS_PRINCIPLES, THEORY_NOTE } from "@/data/ethics-framework";
 import { PETS, PET_BY_ID } from "@/data/pets";
 import { TOPIC_BY_ID } from "@/data/topics";
 import { createSession, removeServerSession } from "@/lib/api-client";
@@ -99,6 +101,13 @@ export function DebateApp() {
     setStep("debate");
   };
 
+  const returnHome = () => {
+    setGradeBand(session?.setup.gradeBand ?? null);
+    setLearnerPetId(session?.setup.learnerPetId ?? null);
+    setNoticeAccepted(false);
+    setStep("welcome");
+  };
+
   const resetExperience = async (deleteRemote: boolean) => {
     let warning = "";
     if (session) {
@@ -143,6 +152,25 @@ export function DebateApp() {
           </div>
         </section>
 
+        {session ? (
+          <section className="resume-card" aria-labelledby="resume-title">
+            <div>
+              <span className="eyebrow">이어 하던 토론</span>
+              <h2 id="resume-title">{TOPIC_BY_ID[session.setup.topicId].title[session.setup.gradeBand]}</h2>
+              <p>첫 화면에 돌아와도 대화는 지워지지 않았어요.</p>
+            </div>
+            <button
+              type="button"
+              className="secondary-button"
+              onClick={() =>
+                setStep(session.status === "reflecting" || session.status === "completed" ? "reflection" : "debate")
+              }
+            >
+              이어서 하기
+            </button>
+          </section>
+        ) : null}
+
         <section className="onboarding-card" aria-labelledby="grade-title">
           <div className="onboarding-heading"><span className="step-number">1</span><div><span className="eyebrow">시작하기</span><h2 id="grade-title">내 학년을 골라 주세요</h2><p>설명하는 낱말과 질문 길이가 달라져요.</p></div></div>
           <fieldset className="grade-options">
@@ -159,25 +187,39 @@ export function DebateApp() {
           <button type="button" className="primary-button welcome-start" disabled={!gradeBand || !noticeAccepted} onClick={() => setStep("quiz")}>내 생각 친구 찾기 <span aria-hidden="true">→</span></button>
         </section>
 
-        <section className="how-it-works" aria-labelledby="how-title"><span className="eyebrow">오늘의 여정</span><h2 id="how-title">세 걸음이면 시작할 수 있어요</h2><ol><li><span>1</span><strong>관점 펫 찾기</strong><p>정답 없는 상황에서 먼저 드는 생각을 골라요.</p></li><li><span>2</span><strong>기술 문제 토론</strong><p>다른 관점의 AI 펫과 질문을 주고받아요.</p></li><li><span>3</span><strong>내 말로 성찰</strong><p>실제 발언을 돌아보고 최종 생각을 직접 써요.</p></li></ol></section>
+        <section className="how-it-works" aria-labelledby="how-title"><span className="eyebrow">오늘의 여정</span><h2 id="how-title">세 걸음이면 시작할 수 있어요</h2><ol><li><span>1</span><strong>관점 펫 찾기</strong><p>정답 없는 상황에서 먼저 드는 생각을 골라요.</p></li><li><span>2</span><strong>AI 윤리 딜레마 토론</strong><p>어느 쪽도 쉽게 버릴 수 없는 두 가치를 살펴봐요.</p></li><li><span>3</span><strong>근거로 결과 보기</strong><p>내가 실제로 한 말을 기준으로 생각 과정을 돌아봐요.</p></li></ol></section>
+        <section className="theory-section" aria-labelledby="theory-title">
+          <span className="eyebrow">펫에게 숨은 세 가지 윤리 렌즈</span>
+          <h2 id="theory-title">AI를 볼 때 무엇을 먼저 소중히 여겼나요?</h2>
+          <p>{THEORY_NOTE.short}</p>
+          <div className="theory-principle-grid">
+            {ETHICS_PRINCIPLES.map((principle) => (
+              <article key={principle.id}>
+                <span aria-hidden="true">{principle.icon}</span>
+                <strong>{principle.name.g34}</strong>
+                <p>{principle.explanation.g34}</p>
+              </article>
+            ))}
+          </div>
+        </section>
       </main>
     );
   }
 
   if (step === "quiz" && gradeBand) {
-    return <main className="focused-page"><TypeQuiz gradeBand={gradeBand} onComplete={(petId) => { setLearnerPetId(petId); setStep("setup"); }} onBack={() => setStep("welcome")} /></main>;
+    return <div className="focused-shell"><nav className="top-nav focused-nav"><HomeBrand onHome={returnHome} /></nav><main className="focused-page"><TypeQuiz gradeBand={gradeBand} onComplete={(petId) => { setLearnerPetId(petId); setStep("setup"); }} onBack={returnHome} /></main></div>;
   }
 
   if (step === "setup" && gradeBand && learnerPetId) {
-    return <main className="focused-page focused-page--wide"><SetupStep gradeBand={gradeBand} learnerPetId={learnerPetId} onStart={startSession} onRetake={() => { setLearnerPetId(null); setStep("quiz"); }} /></main>;
+    return <div className="focused-shell"><nav className="top-nav focused-nav"><HomeBrand onHome={returnHome} /></nav><main className="focused-page focused-page--wide"><SetupStep gradeBand={gradeBand} learnerPetId={learnerPetId} onStart={startSession} onRetake={() => { setLearnerPetId(null); setStep("quiz"); }} /></main></div>;
   }
 
   if (step === "debate" && session) {
-    return <DebateArena session={session} onChange={updateSession} onReflect={() => { void updateSession({ ...session, status: "reflecting" }); setStep("reflection"); }} onDelete={() => { if (window.confirm("이 기기와 서버의 토론 기록을 모두 삭제할까요? 삭제하면 되돌릴 수 없어요.")) void resetExperience(true); }} />;
+    return <DebateArena session={session} onChange={updateSession} onHome={returnHome} onReflect={() => { void updateSession({ ...session, status: "reflecting" }); setStep("reflection"); }} onDelete={() => { if (window.confirm("이 기기와 서버의 토론 기록을 모두 삭제할까요? 삭제하면 되돌릴 수 없어요.")) void resetExperience(true); }} />;
   }
 
   if (step === "reflection" && session) {
-    return <ReflectionStep session={session} onChange={updateSession} onBackToDebate={() => { void updateSession({ ...session, status: "ready" }); setStep("debate"); }} onNewDebate={() => void resetExperience(true)} />;
+    return <ReflectionStep session={session} onChange={updateSession} onHome={returnHome} onBackToDebate={() => { void updateSession({ ...session, status: "ready" }); setStep("debate"); }} onNewDebate={() => void resetExperience(true)} />;
   }
 
   return <main className="loading-screen"><p>진행 상태를 다시 불러오지 못했어요.</p><button className="primary-button" onClick={() => void resetExperience(false)}>처음으로</button></main>;

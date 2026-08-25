@@ -4,6 +4,7 @@ import OpenAI from "openai";
 import { zodTextFormat } from "openai/helpers/zod";
 
 import { TOPIC_BY_ID } from "@/data/topics";
+import { PET_BY_ID } from "@/data/pets";
 import { buildChatPrompt, buildReviewPrompt } from "@/lib/prompts";
 import { ChatModelOutputSchema, ReviewResultSchema, type ChatModelOutput } from "@/lib/schemas";
 import type {
@@ -114,12 +115,14 @@ export async function generateChatTurn(args: {
   };
 }
 
-function mockReview(messages: DebateMessage[], draft: ReflectionDraft): ReviewResult {
+function mockReview(setup: SessionSetup, messages: DebateMessage[], draft: ReflectionDraft): ReviewResult {
   const learner = messages.filter((message) => message.role === "learner" && message.kind === "move");
   const evidence = learner.slice(0, 2).map((message) => ({
     messageId: message.id,
     quote: message.content.slice(0, 100),
   }));
+  const primaryPrinciple = PET_BY_ID[setup.learnerPetId].principleId;
+  const firstEvidence = evidence.slice(0, 1);
   return {
     learnerSaid: [
       {
@@ -138,6 +141,25 @@ function mockReview(messages: DebateMessage[], draft: ReflectionDraft): ReviewRe
     systemRecommended: [
       { nextQuestion: "내가 정한 조건을 실제로 누가 확인하면 좋을까?", reason: "책임을 맡을 사람까지 생각해 보기 위해서예요." },
     ],
+    ethicsAnalysis: {
+      primaryPrinciple,
+      summary: "이번 대화에서 자주 꺼낸 가치와 생각 과정을 실제 발언으로 살펴봤어요.",
+      principleSignals: (["human_dignity", "social_good", "technical_purpose"] as const).map((id) => ({
+        id,
+        level: id === primaryPrinciple ? "some" : "next",
+        explanation:
+          id === primaryPrinciple
+            ? "이 가치를 생각한 말이 대화에서 보였어요."
+            : "다음 토론에서 이 가치도 질문해 볼 수 있어요.",
+        evidence: id === primaryPrinciple ? firstEvidence : [],
+      })),
+      sensitivitySignals: (["situation", "consequence", "empathy", "responsibility"] as const).map((id) => ({
+        id,
+        level: "some" as const,
+        explanation: "학생의 실제 말에서 이 생각 과정의 단서를 찾았어요.",
+        evidence: firstEvidence,
+      })),
+    },
     feedback: `초안에서 '${draft.myThinking.slice(0, 50)}'라는 중심 생각이 보여요. 반대 입장이 걱정하는 점도 한 문장 더 연결해 보세요.`,
     sentenceStarters: ["내가 중요하게 생각한 조건은 …", "반대 의견을 듣고 새로 생각한 점은 …"],
   };
@@ -154,7 +176,7 @@ export async function generateReview(args: {
   const model = process.env.OPENAI_MODEL || "gpt-5.6-luna";
   if (isMock()) {
     return {
-      result: mockReview(args.messages, args.draft),
+      result: mockReview(args.setup, args.messages, args.draft),
       meta: { responseId: "mock-review", model: "mock", inputTokens: 0, outputTokens: 0, latencyMs: Date.now() - started },
     };
   }

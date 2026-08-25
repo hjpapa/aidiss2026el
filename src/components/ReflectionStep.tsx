@@ -2,6 +2,8 @@
 
 import { useMemo, useRef, useState } from "react";
 
+import { EthicsAnalysisPanel } from "@/components/EthicsAnalysisPanel";
+import { HomeBrand } from "@/components/HomeBrand";
 import { PetAvatar } from "@/components/PetAvatar";
 import { PET_BY_ID } from "@/data/pets";
 import { READINESS_CRITERIA } from "@/data/readiness";
@@ -13,6 +15,7 @@ import type { FinalStance, LocalDebateSession, ReflectionDraft } from "@/types/d
 interface ReflectionStepProps {
   session: LocalDebateSession;
   onChange: (session: LocalDebateSession) => Promise<void>;
+  onHome: () => void;
   onBackToDebate: () => void;
   onNewDebate: () => void;
 }
@@ -80,7 +83,7 @@ function draftComplete(draft: ReflectionDraft): boolean {
   return draft.myThinking.trim().length >= 12 && draft.hardestCounterpoint.trim().length >= 5 && draft.technicalUnderstanding.trim().length >= 5;
 }
 
-export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate }: ReflectionStepProps) {
+export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNewDebate }: ReflectionStepProps) {
   const [draft, setDraft] = useState<ReflectionDraft>(session.reflectionDraft ?? EMPTY_DRAFT);
   const [finalDraft, setFinalDraft] = useState<ReflectionDraft>(session.finalReflection ?? session.reflectionDraft ?? EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
@@ -191,9 +194,10 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
   if (session.status === "completed" && session.finalReflection) {
     return (
       <main className="reflection-page result-page">
+        <nav className="reflection-nav"><HomeBrand onHome={onHome} /></nav>
         <section className="result-hero">
           <PetAvatar petId={pet.id} size="large" />
-          <div><span className="eyebrow">토론을 마쳤어요</span><h1>{pet.shortName}와 찾은 나의 기술 관점</h1><p>{topic.title[session.setup.gradeBand]}</p></div>
+          <div><span className="eyebrow">토론을 마쳤어요</span><h1>{pet.shortName}와 찾은 나의 AI 윤리 관점</h1><p>{topic.title[session.setup.gradeBand]}</p></div>
         </section>
         <section className="final-reflection-card">
           <span className="final-stance-badge">{STANCES.find((item) => item.value === session.finalReflection!.stance)?.label}</span>
@@ -204,6 +208,12 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
             <div><dt>내가 이해한 기술 원리</dt><dd>{session.finalReflection.technicalUnderstanding}</dd></div>
           </dl>
         </section>
+        {session.review?.ethicsAnalysis ? (
+          <EthicsAnalysisPanel
+            analysis={session.review.ethicsAnalysis}
+            gradeBand={session.setup.gradeBand}
+          />
+        ) : null}
         <div className="result-actions"><button type="button" className="secondary-button" onClick={() => window.print()}>결과 인쇄하기</button><button type="button" className="primary-button" onClick={onNewDebate}>새 토론 시작하기</button></div>
       </main>
     );
@@ -212,6 +222,7 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
   if (!showDraft && !session.reflectionDraft) {
     return (
       <main className="reflection-page">
+        <nav className="reflection-nav"><HomeBrand onHome={onHome} /></nav>
         <header className="reflection-header">
           <span className="eyebrow">성찰 1단계</span>
           <h1>먼저, 내가 나눈 대화를 돌아봐요</h1>
@@ -272,6 +283,7 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
   if (session.review && session.reflectionDraft) {
     return (
       <main className="reflection-page">
+        <nav className="reflection-nav"><HomeBrand onHome={onHome} /></nav>
         <header className="reflection-header"><span className="eyebrow">성찰 3단계</span><h1>AI의 검토를 참고해 내 말로 완성해요</h1><p>AI 해석은 정답이 아니에요. 맞지 않으면 따르지 않아도 됩니다.</p></header>
         <div className="review-layout">
           <section className="review-card review-card--said">
@@ -301,6 +313,7 @@ export function ReflectionStep({ session, onChange, onBackToDebate, onNewDebate 
 
   return (
     <main className="reflection-page">
+      <nav className="reflection-nav"><HomeBrand onHome={onHome} /></nav>
       <header className="reflection-header"><span className="eyebrow">성찰 2단계</span><h1>이제 내 생각을 내 말로 적어요</h1><p>방금 본 대화와 AI의 요약이 내 뜻과 달랐다면 여기에서 바로잡아 주세요.</p></header>
       <section className="draft-card">
         <div className="reflection-topic"><span aria-hidden="true">{topic.icon}</span><div><small>토론 주제</small><strong>{topic.title[session.setup.gradeBand]}</strong></div></div>

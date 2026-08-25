@@ -8,6 +8,9 @@ export const PETS: PetProfile[] = [
     name: "반짝여우 루미",
     shortName: "루미",
     lens: "먼저 써 보자",
+    roleName: byGrade("쓸모 탐험가", "가능성과 쓸모 탐험가"),
+    principleId: "technical_purpose",
+    principleName: byGrade("기술이 제 일을 잘하게", "기술 합목적성"),
     emoji: "🦊",
     color: "#f3a15f",
     intro: byGrade(
@@ -26,12 +29,19 @@ export const PETS: PetProfile[] = [
       "밝고 호기심 있게 가능성을 묻는다.",
       "낙관적이지만 단정하지 않고 새로운 가능성과 조건을 질문한다.",
     ),
+    guidingQuestion: byGrade(
+      "이 기술은 우리에게 어떤 도움을 줄까?",
+      "이 기술은 정한 목적을 얼마나 잘 이루며 어떤 가능성을 열까?",
+    ),
   },
   {
     id: "toto",
     name: "든든거북 토토",
     shortName: "토토",
     lens: "안전해야 써야 해",
+    roleName: byGrade("권리 지킴이", "안전과 권리 지킴이"),
+    principleId: "human_dignity",
+    principleName: byGrade("한 사람을 소중하게", "인간 존엄성"),
     emoji: "🐢",
     color: "#72a986",
     intro: byGrade(
@@ -50,12 +60,19 @@ export const PETS: PetProfile[] = [
       "겁주지 않고 안전하게 쓰는 방법을 묻는다.",
       "권리, 동의, 보호 조건을 차분히 확인한다.",
     ),
+    guidingQuestion: byGrade(
+      "누군가 다치거나 소중한 것을 빼앗기지 않을까?",
+      "사람의 안전·사생활·권리가 충분히 보호되는가?",
+    ),
   },
   {
     id: "pori",
     name: "꼼꼼부엉 포리",
     shortName: "포리",
     lens: "맞는지 먼저 확인하자",
+    roleName: byGrade("한계 탐정", "정확성과 한계 탐정"),
+    principleId: "technical_purpose",
+    principleName: byGrade("기술이 제 일을 잘하게", "기술 합목적성"),
     emoji: "🦉",
     color: "#8a7bc2",
     intro: byGrade(
@@ -74,12 +91,19 @@ export const PETS: PetProfile[] = [
       "또박또박 무엇으로 확인할 수 있는지 묻는다.",
       "정답을 선언하기보다 근거, 비교 자료, 예외를 요청한다.",
     ),
+    guidingQuestion: byGrade(
+      "기술이 정말 제대로 움직인다는 걸 어떻게 알까?",
+      "기술의 정확도와 한계를 어떤 근거로 확인할 수 있을까?",
+    ),
   },
   {
     id: "momo",
     name: "다정수달 모모",
     shortName: "모모",
     lens: "모두에게 공평해야 해",
+    roleName: byGrade("공평 살핌이", "공평과 포용 살핌이"),
+    principleId: "social_good",
+    principleName: byGrade("우리 모두에게 이롭게", "사회 공공선"),
     emoji: "🦦",
     color: "#60a9bb",
     intro: byGrade(
@@ -98,12 +122,19 @@ export const PETS: PetProfile[] = [
       "따뜻하게 다른 사람의 느낌과 영향을 묻는다.",
       "특정 편을 비난하지 않고 영향을 받는 사람들의 관점을 묻는다.",
     ),
+    guidingQuestion: byGrade(
+      "혜택과 어려움이 모두에게 공평하게 나뉠까?",
+      "혜택과 부담이 여러 사람에게 공정하게 돌아가는가?",
+    ),
   },
   {
     id: "hari",
     name: "생각토끼 하리",
     shortName: "하리",
     lens: "사람이 마지막에 결정해야 해",
+    roleName: byGrade("선택 길잡이", "사람의 선택과 책임 길잡이"),
+    principleId: "human_dignity",
+    principleName: byGrade("한 사람을 소중하게", "인간 존엄성"),
     emoji: "🐰",
     color: "#e889a8",
     intro: byGrade(
@@ -122,12 +153,19 @@ export const PETS: PetProfile[] = [
       "누가 마지막으로 고르고 책임질지 묻는다.",
       "AI의 도움과 사람의 최종 판단을 어떻게 나눌지 질문한다.",
     ),
+    guidingQuestion: byGrade(
+      "중요한 선택은 누가 하고 책임져야 할까?",
+      "사람의 선택권과 최종 책임은 어디에 남겨야 할까?",
+    ),
   },
   {
     id: "duri",
     name: "척척비버 두리",
     shortName: "두리",
     lens: "규칙을 정해 쓰자",
+    roleName: byGrade("함께 약속 설계자", "공동 규칙 설계자"),
+    principleId: "social_good",
+    principleName: byGrade("우리 모두에게 이롭게", "사회 공공선"),
     emoji: "🦫",
     color: "#b27a55",
     intro: byGrade(
@@ -145,6 +183,10 @@ export const PETS: PetProfile[] = [
     debateStyle: byGrade(
       "사용할 수 있는 조건과 지킬 약속을 묻는다.",
       "구체적인 사용 범위, 확인 방법, 책임자를 질문한다.",
+    ),
+    guidingQuestion: byGrade(
+      "모두가 안심하려면 어떤 약속이 필요할까?",
+      "공동의 이익을 지킬 규칙과 책임자는 어떻게 정할까?",
     ),
   },
 ];

@@ -45,7 +45,8 @@ export function TypeQuiz({ gradeBand, onComplete, onBack }: TypeQuizProps) {
               <button key={petId} type="button" className="pet-choice" onClick={() => onComplete(petId)}>
                 <PetAvatar petId={petId} size="large" />
                 <strong>{pet.name}</strong>
-                <span>{pet.lens}</span>
+                <span>{pet.roleName[gradeBand]} · {pet.principleName[gradeBand]}</span>
+                <small>{pet.lens}</small>
                 <small>{pet.intro[gradeBand]}</small>
               </button>
             );
@@ -65,6 +66,10 @@ export function TypeQuiz({ gradeBand, onComplete, onBack }: TypeQuizProps) {
           <span className="eyebrow">오늘의 생각 친구 찾기 · {index + 1}/{TYPE_QUIZ.length}</span>
           <h1 id="quiz-title">{question.situation[gradeBand]}</h1>
         </div>
+      <p className="quiz-explainer">
+        정답이나 성격을 재는 검사가 아니에요. 두 가치가 부딪힐 때 오늘 더 먼저
+        떠오르는 생각을 골라요.
+      </p>
       </div>
       <fieldset className="quiz-options">
         <legend className="sr-only">더 먼저 떠오르는 생각을 고르세요</legend>
@@ -74,7 +79,7 @@ export function TypeQuiz({ gradeBand, onComplete, onBack }: TypeQuizProps) {
             <button key={option.petId} type="button" className="quiz-option" onClick={() => choose(option.petId)}>
               <PetAvatar petId={option.petId} size="small" />
               <span>
-                <small>{pet.shortName}의 생각</small>
+                <small>{pet.shortName} · {pet.roleName[gradeBand]}</small>
                 <strong>{option.text[gradeBand]}</strong>
               </span>
             </button>
