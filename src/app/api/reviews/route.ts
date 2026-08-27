@@ -4,6 +4,7 @@ import { apiError, authorizeSession, rejectOversizedRequest } from "@/lib/api-ut
 import { generateReview, moderateText } from "@/lib/openai";
 import { hasVerifiedReadiness, isValidEvidence } from "@/lib/readiness";
 import { ReviewRequestSchema } from "@/lib/schemas";
+import { checkForPii, safetyMessageFor } from "@/lib/safety";
 import { hashIdentifier, verifyStateProof } from "@/lib/session-token";
 import {
   claimGeneration,
@@ -74,6 +75,20 @@ export async function POST(request: Request) {
     return apiError("not_ready", "다섯 생각 발자국을 실제 토론 근거로 모두 채운 뒤 성찰할 수 있어요.", 409);
   }
 
+  const draftText = [
+    body.draft.myThinking,
+    body.draft.hardestCounterpoint,
+    body.draft.technicalUnderstanding,
+  ].join("\n");
+  const pii = checkForPii(draftText);
+  if (!pii.safe) {
+    return apiError(
+      "personal_information",
+      pii.message ?? "개인정보를 빼고 다시 작성해 주세요.",
+      422,
+    );
+  }
+
   const requestFingerprint = hashIdentifier(
     JSON.stringify({
       sessionId: body.sessionId,
@@ -109,6 +124,16 @@ export async function POST(request: Request) {
     }
   } catch {
     return apiError("rate_limit_unavailable", "안전한 요청 속도를 확인할 수 없어요. 잠시 뒤 다시 시도해 주세요.", 503);
+  }
+
+  let inputModeration: Awaited<ReturnType<typeof moderateText>>;
+  try {
+    inputModeration = await moderateText(draftText);
+  } catch {
+    return apiError("moderation_unavailable", "안전 확인을 잠시 할 수 없어요. 조금 뒤 다시 시도해 주세요.", 503);
+  }
+  if (inputModeration.flagged) {
+    return apiError("unsafe_content", safetyMessageFor(inputModeration.categories, draftText), 422);
   }
 
   let claimToken: string | undefined;

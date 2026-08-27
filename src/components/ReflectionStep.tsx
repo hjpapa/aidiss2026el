@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { CommunityInsightsPage } from "@/components/CommunityInsightsPage";
 import { EthicsAnalysisPanel } from "@/components/EthicsAnalysisPanel";
 import { HomeBrand } from "@/components/HomeBrand";
 import { PetAvatar } from "@/components/PetAvatar";
@@ -18,6 +19,7 @@ interface ReflectionStepProps {
   onHome: () => void;
   onBackToDebate: () => void;
   onNewDebate: () => void;
+  onDelete: () => void;
 }
 
 const EMPTY_DRAFT: ReflectionDraft = {
@@ -83,16 +85,41 @@ function draftComplete(draft: ReflectionDraft): boolean {
   return draft.myThinking.trim().length >= 12 && draft.hardestCounterpoint.trim().length >= 5 && draft.technicalUnderstanding.trim().length >= 5;
 }
 
-export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNewDebate }: ReflectionStepProps) {
+export function ReflectionStep({
+  session,
+  onChange,
+  onHome,
+  onBackToDebate,
+  onNewDebate,
+  onDelete,
+}: ReflectionStepProps) {
   const [draft, setDraft] = useState<ReflectionDraft>(session.reflectionDraft ?? EMPTY_DRAFT);
   const [finalDraft, setFinalDraft] = useState<ReflectionDraft>(session.finalReflection ?? session.reflectionDraft ?? EMPTY_DRAFT);
   const [busy, setBusy] = useState(false);
   const [showDraft, setShowDraft] = useState(Boolean(session.reflectionDraft));
+  const [showCommunity, setShowCommunity] = useState(false);
+  const [shareWithCommunity, setShareWithCommunity] = useState(false);
   const [error, setError] = useState("");
   const reviewRequestRef = useRef<{ fingerprint: string; requestId: string } | null>(null);
   const finalRequestRef = useRef<{ fingerprint: string; requestId: string } | null>(null);
+  const pageHeadingRef = useRef<HTMLHeadingElement>(null);
   const topic = TOPIC_BY_ID[session.setup.topicId];
   const pet = PET_BY_ID[session.setup.learnerPetId];
+  const viewKey =
+    session.status === "completed"
+      ? showCommunity
+        ? "community"
+        : "result"
+      : !showDraft
+        ? "conversation"
+        : session.review && session.reflectionDraft
+          ? "review"
+          : "draft";
+
+  useEffect(() => {
+    if (viewKey !== "community") pageHeadingRef.current?.focus();
+  }, [viewKey]);
+
   const debateMoves = useMemo(
     () =>
       session.messages.filter(
@@ -165,7 +192,7 @@ export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNe
 
   const finish = async () => {
     if (!session.review || !session.reflectionDraft || !draftComplete(finalDraft) || busy) return;
-    const fingerprint = JSON.stringify(finalDraft);
+    const fingerprint = JSON.stringify({ finalDraft, shareWithCommunity });
     const requestId =
       finalRequestRef.current?.fingerprint === fingerprint
         ? finalRequestRef.current.requestId
@@ -181,6 +208,7 @@ export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNe
         reviewId: session.reviewId,
         draft: session.reflectionDraft,
         final: finalDraft,
+        shareWithCommunity,
       });
       await onChange({ ...session, status: "completed", finalReflection: finalDraft, persistence: result.persistence });
       finalRequestRef.current = null;
@@ -192,12 +220,23 @@ export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNe
   };
 
   if (session.status === "completed" && session.finalReflection) {
+    if (showCommunity) {
+      return (
+        <CommunityInsightsPage
+          sessionId={session.id}
+          token={session.token}
+          gradeBand={session.setup.gradeBand}
+          onHome={onHome}
+          onBack={() => setShowCommunity(false)}
+        />
+      );
+    }
     return (
       <main className="reflection-page result-page">
         <nav className="reflection-nav"><HomeBrand onHome={onHome} /></nav>
         <section className="result-hero">
           <PetAvatar petId={pet.id} size="large" />
-          <div><span className="eyebrow">토론을 마쳤어요</span><h1>{pet.shortName}와 찾은 나의 AI 윤리 관점</h1><p>{topic.title[session.setup.gradeBand]}</p></div>
+          <div><span className="eyebrow">토론을 마쳤어요</span><h1 ref={pageHeadingRef} tabIndex={-1}>{pet.shortName}와 찾은 나의 AI 윤리 관점</h1><p>{topic.title[session.setup.gradeBand]}</p></div>
         </section>
         <section className="final-reflection-card">
           <span className="final-stance-badge">{STANCES.find((item) => item.value === session.finalReflection!.stance)?.label}</span>
@@ -214,18 +253,25 @@ export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNe
             gradeBand={session.setup.gradeBand}
           />
         ) : null}
-        <div className="result-actions"><button type="button" className="secondary-button" onClick={() => window.print()}>결과 인쇄하기</button><button type="button" className="primary-button" onClick={onNewDebate}>새 토론 시작하기</button></div>
+        <div className="result-actions">
+          <button type="button" className="primary-button" onClick={() => setShowCommunity(true)}>친구들의 생각 보기</button>
+          <button type="button" className="secondary-button" onClick={() => window.print()}>결과 인쇄하기</button>
+          <button type="button" className="secondary-button" onClick={onNewDebate}>새 토론 시작하기</button>
+        </div>
+        <div className="result-delete-row">
+          <button type="button" className="text-button danger-text" onClick={onDelete}>내 토론 기록 삭제</button>
+        </div>
       </main>
     );
   }
 
-  if (!showDraft && !session.reflectionDraft) {
+  if (!showDraft) {
     return (
       <main className="reflection-page">
         <nav className="reflection-nav"><HomeBrand onHome={onHome} /></nav>
         <header className="reflection-header">
           <span className="eyebrow">성찰 1단계</span>
-          <h1>먼저, 내가 나눈 대화를 돌아봐요</h1>
+          <h1 ref={pageHeadingRef} tabIndex={-1}>먼저, 내가 나눈 대화를 돌아봐요</h1>
           <p>AI가 찾은 내용이 내 뜻과 같은지 실제 내 말을 보며 확인해요.</p>
         </header>
         <section className="conversation-review-card">
@@ -284,7 +330,7 @@ export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNe
     return (
       <main className="reflection-page">
         <nav className="reflection-nav"><HomeBrand onHome={onHome} /></nav>
-        <header className="reflection-header"><span className="eyebrow">성찰 3단계</span><h1>AI의 검토를 참고해 내 말로 완성해요</h1><p>AI 해석은 정답이 아니에요. 맞지 않으면 따르지 않아도 됩니다.</p></header>
+        <header className="reflection-header"><span className="eyebrow">성찰 3단계</span><h1 ref={pageHeadingRef} tabIndex={-1}>AI의 검토를 참고해 내 말로 완성해요</h1><p>AI 해석은 정답이 아니에요. 맞지 않으면 따르지 않아도 됩니다.</p></header>
         <div className="review-layout">
           <section className="review-card review-card--said">
             <span className="review-label">학생이 실제로 말한 것</span>
@@ -304,6 +350,29 @@ export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNe
           <p className="ai-feedback"><strong>AI의 짧은 피드백</strong>{session.review.feedback}</p>
            <div className="sentence-starters">{session.review.sentenceStarters.map((text, index) => <span key={`${index}-${text}`}>{text}</span>)}</div>
           <ReflectionFields value={finalDraft} onChange={setFinalDraft} idPrefix="final" />
+          {session.persistence === "stored" ? (
+            <label className="community-consent">
+              <input
+                type="checkbox"
+                checked={shareWithCommunity}
+                onChange={(event) => setShareWithCommunity(event.target.checked)}
+              />
+              <span>
+                <strong>내 최종 생각과 까닭 일부를 토론 주제와 함께 이름 없이 소개해도 좋아요.</strong>
+                <small>
+                  선택하지 않아도 토론을 마칠 수 있어요. 개인정보와 안전 확인을 통과한 글만 소개하고,
+                  펫 유형과 최종 입장은 글에 붙이지 않아요.
+                </small>
+              </span>
+            </label>
+          ) : (
+            <div className="community-consent is-disabled" role="note">
+              <span>
+                <strong>익명 소개는 서버에 안전하게 저장된 토론에서만 선택할 수 있어요.</strong>
+                <small>현재 토론은 이 기기에만 저장되어 친구 생각 후보에 포함되지 않아요.</small>
+              </span>
+            </div>
+          )}
           {error ? <p className="error-message" role="alert">{error}</p> : null}
           <div className="reflection-actions"><button type="button" className="secondary-button" disabled={busy} onClick={onBackToDebate}>토론 더 하기</button><button type="button" className="primary-button" disabled={!draftComplete(finalDraft) || busy} onClick={() => void finish()}>{busy ? "저장하는 중…" : "내 말로 최종 확정하기"}</button></div>
         </section>
@@ -314,12 +383,16 @@ export function ReflectionStep({ session, onChange, onHome, onBackToDebate, onNe
   return (
     <main className="reflection-page">
       <nav className="reflection-nav"><HomeBrand onHome={onHome} /></nav>
-      <header className="reflection-header"><span className="eyebrow">성찰 2단계</span><h1>이제 내 생각을 내 말로 적어요</h1><p>방금 본 대화와 AI의 요약이 내 뜻과 달랐다면 여기에서 바로잡아 주세요.</p></header>
+      <header className="reflection-header"><span className="eyebrow">성찰 2단계</span><h1 ref={pageHeadingRef} tabIndex={-1}>이제 내 생각을 내 말로 적어요</h1><p>방금 본 대화와 AI의 요약이 내 뜻과 달랐다면 여기에서 바로잡아 주세요.</p></header>
       <section className="draft-card">
         <div className="reflection-topic"><span aria-hidden="true">{topic.icon}</span><div><small>토론 주제</small><strong>{topic.title[session.setup.gradeBand]}</strong></div></div>
         <ReflectionFields value={draft} onChange={setDraft} idPrefix="draft" />
         {error ? <p className="error-message" role="alert">{error}</p> : null}
-        <div className="reflection-actions"><button type="button" className="secondary-button" disabled={busy} onClick={onBackToDebate}>토론 더 하기</button><button type="button" className="primary-button" disabled={!draftComplete(draft) || busy} onClick={() => void requestReview()}>{busy ? "근거를 살펴보는 중…" : "초안을 저장하고 AI 검토 보기"}</button></div>
+        <div className="reflection-actions reflection-actions--three">
+          <button type="button" className="secondary-button" disabled={busy} onClick={() => setShowDraft(false)}>1단계 · 대화 다시 보기</button>
+          <button type="button" className="secondary-button" disabled={busy} onClick={onBackToDebate}>토론 더 하기</button>
+          <button type="button" className="primary-button" disabled={!draftComplete(draft) || busy} onClick={() => void requestReview()}>{busy ? "근거를 살펴보는 중…" : "초안을 저장하고 AI 검토 보기"}</button>
+        </div>
       </section>
     </main>
   );

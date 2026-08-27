@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 
 import { apiError, authorizeSession, rejectOversizedRequest } from "@/lib/api-utils";
+import { moderateText } from "@/lib/openai";
 import { ReflectionRequestSchema } from "@/lib/schemas";
+import { checkForPii, safetyMessageFor } from "@/lib/safety";
 import { hashIdentifier } from "@/lib/session-token";
-import { persistReflection } from "@/lib/supabase-server";
+import { consumeRateLimit, persistReflection } from "@/lib/supabase-server";
 
 export const runtime = "nodejs";
 
@@ -24,6 +26,52 @@ export async function POST(request: Request) {
   if (auth.mode === "stored" && !body.reviewId) {
     return apiError("review_missing", "저장된 AI 검토를 찾을 수 없어요. 검토를 다시 받아 주세요.", 409);
   }
+
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  try {
+    const rates = await Promise.all([
+      consumeRateLimit("session", `reflection:${body.sessionId}`, 5),
+      consumeRateLimit("ip", `reflection:${forwarded}`, 20),
+    ]);
+    const blocked = rates.find((rate) => !rate.allowed);
+    if (blocked) {
+      return apiError("rate_limited", "최종 성찰을 너무 빠르게 요청하고 있어요. 잠시 뒤 다시 시도해 주세요.", 429, {
+        retryAfter: blocked.retryAfter,
+      });
+    }
+  } catch {
+    return apiError("rate_limit_unavailable", "안전한 요청 속도를 확인할 수 없어요. 잠시 뒤 다시 시도해 주세요.", 503);
+  }
+
+  const reflectionText = [
+    body.draft.myThinking,
+    body.draft.hardestCounterpoint,
+    body.draft.technicalUnderstanding,
+    body.final.myThinking,
+    body.final.hardestCounterpoint,
+    body.final.technicalUnderstanding,
+  ].join("\n");
+  const pii = checkForPii(reflectionText);
+  if (!pii.safe) {
+    return apiError(
+      "personal_information",
+      pii.message ?? "개인정보를 빼고 다시 작성해 주세요.",
+      422,
+    );
+  }
+  let moderation: Awaited<ReturnType<typeof moderateText>>;
+  try {
+    moderation = await moderateText(reflectionText);
+  } catch {
+    return apiError(
+      "moderation_unavailable",
+      "안전 확인을 잠시 할 수 없어요. 조금 뒤 다시 시도해 주세요.",
+      503,
+    );
+  }
+  if (moderation.flagged) {
+    return apiError("unsafe_content", safetyMessageFor(moderation.categories, reflectionText), 422);
+  }
   const requestFingerprint = hashIdentifier(
     JSON.stringify({
       sessionId: body.sessionId,
@@ -31,6 +79,7 @@ export async function POST(request: Request) {
       reviewId: body.reviewId ?? null,
       draft: body.draft,
       final: body.final,
+      shareWithCommunity: body.shareWithCommunity,
     }),
   );
   if (auth.mode === "local_only") {
@@ -45,6 +94,7 @@ export async function POST(request: Request) {
       requestFingerprint,
       draft: body.draft,
       final: body.final,
+      shareWithCommunity: body.shareWithCommunity,
     });
   } catch {
     if (auth.mode === "stored") {

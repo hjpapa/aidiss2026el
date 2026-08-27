@@ -2,10 +2,20 @@ import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+import {
+  buildCommunityInsights,
+  COMMUNITY_PET_IDS,
+  MIN_RATIO_SESSIONS,
+  type CommunityThoughtCandidate,
+} from "@/lib/community-insights";
+import { TOPIC_BY_ID } from "@/data/topics";
 import { CHAT_PROMPT_VERSION, REVIEW_PROMPT_VERSION } from "@/lib/prompts";
 import { hashCapability, hashIdentifier } from "@/lib/session-token";
 import type { GenerationMeta } from "@/lib/openai";
 import type {
+  CommunityInsights,
+  PetId,
+  TopicId,
   DebateMessage,
   DebateState,
   ReflectionDraft,
@@ -350,17 +360,19 @@ export async function persistReflection(args: {
   requestFingerprint: string;
   draft: ReflectionDraft;
   final: ReflectionDraft;
+  shareWithCommunity: boolean;
 }): Promise<boolean> {
   const db = getSupabaseAdmin();
   if (!db) return false;
   if (!args.reviewId) return false;
-  const { data, error } = await db.rpc("aidiss_complete_reflection", {
+  const { data, error } = await db.rpc("aidiss_complete_reflection_with_consent", {
     p_session_id: args.sessionId,
     p_review_id: args.reviewId,
     p_request_id: args.requestId,
     p_final_fingerprint: args.requestFingerprint,
     p_draft: args.draft,
     p_final: args.final,
+    p_share_with_community: args.shareWithCommunity,
   });
   if (error) throw error;
   const row = Array.isArray(data) ? data[0] : data;
@@ -372,6 +384,79 @@ export async function deleteSession(sessionId: string): Promise<boolean> {
   if (!db) return false;
   const { error } = await db.from("aidiss_sessions").delete().eq("id", sessionId);
   return !error;
+}
+export async function isStoredSessionCompleted(sessionId: string): Promise<boolean> {
+  const db = getSupabaseAdmin();
+  if (!db) return false;
+  const { data, error } = await db
+    .from("aidiss_sessions")
+    .select("id")
+    .eq("id", sessionId)
+    .eq("status", "completed")
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+  if (error) throw error;
+  return Boolean(data);
+}
+
+export async function loadCommunityInsights(
+  currentSessionId: string,
+): Promise<CommunityInsights | null> {
+  const db = getSupabaseAdmin();
+  if (!db) return null;
+  const { data: countData, error: countError } = await db.rpc("aidiss_community_pet_counts");
+  if (countError) throw countError;
+  const counts = Object.fromEntries(
+    COMMUNITY_PET_IDS.map((petId) => [petId, 0]),
+  ) as Record<PetId, number>;
+  for (const row of (countData ?? []) as Array<{ pet_id: unknown; debate_count: unknown }>) {
+    const petId = row.pet_id;
+    const count = Number(row.debate_count);
+    if (
+      typeof petId === "string" &&
+      COMMUNITY_PET_IDS.includes(petId as PetId) &&
+      Number.isSafeInteger(count) &&
+      count >= 0
+    ) {
+      counts[petId as PetId] = count;
+    }
+  }
+  const total = COMMUNITY_PET_IDS.reduce((sum, petId) => sum + counts[petId], 0);
+  if (total < MIN_RATIO_SESSIONS) return buildCommunityInsights(counts, []);
+
+  const { data, error } = await db.rpc("aidiss_community_thought_candidates", {
+    p_limit: 40,
+  });
+  if (error) throw error;
+
+  const candidates = (
+    (data ?? []) as Array<{
+      session_id: unknown;
+      pet_id: unknown;
+      topic_id: unknown;
+      my_thinking: unknown;
+    }>
+  ).flatMap<CommunityThoughtCandidate>((row) => {
+    const petId = row.pet_id;
+    const topicId = row.topic_id;
+    const text = row.my_thinking;
+    if (
+      typeof row.session_id !== "string" ||
+      row.session_id === currentSessionId ||
+      !COMMUNITY_PET_IDS.includes(petId as PetId) ||
+      typeof topicId !== "string" ||
+      !(topicId in TOPIC_BY_ID) ||
+      typeof text !== "string"
+    ) {
+      return [];
+    }
+    return [{
+      petId: petId as PetId,
+      topicId: topicId as TopicId,
+      myThinking: text,
+    }];
+  });
+  return buildCommunityInsights(counts, candidates);
 }
 
 const memoryLimits = new Map<string, { window: number; count: number }>();

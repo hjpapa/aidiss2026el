@@ -175,6 +175,7 @@ export const ReflectionRequestSchema = z.object({
   reviewId: z.string().uuid().optional(),
   draft: ReflectionDraftSchema,
   final: ReflectionDraftSchema,
+  shareWithCommunity: z.boolean(),
 });
 
 export type ChatModelOutput = z.infer<typeof ChatModelOutputSchema>;

@@ -2,6 +2,7 @@
 
 import type {
   ChatTurnResult,
+  CommunityInsights,
   DebateMessage,
   DebateState,
   ReflectionDraft,
@@ -88,16 +89,27 @@ export function createReview(args: {
 
 export function submitReflection(args: {
   sessionId: string;
-    token: string;
-    requestId: string;
-    reviewId?: string;
-    draft: ReflectionDraft;
-    final: ReflectionDraft;
+  token: string;
+  requestId: string;
+  reviewId?: string;
+  draft: ReflectionDraft;
+  final: ReflectionDraft;
+  shareWithCommunity: boolean;
 }) {
   return requestJson<{ ok: true; persistence: "stored" | "local_only" }>("/api/reflections", {
     method: "POST",
     body: JSON.stringify(args),
   });
+}
+
+export function getCommunityInsights(sessionId: string, token: string) {
+  return requestJson<{ ok: true; insights: CommunityInsights }>(
+    `/api/sessions/${sessionId}/insights`,
+    {
+      method: "GET",
+      headers: { authorization: `Bearer ${token}` },
+    },
+  );
 }
 
 export async function removeServerSession(sessionId: string, token: string): Promise<void> {

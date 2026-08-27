@@ -130,6 +130,23 @@ export interface ReflectionDraft {
   technicalUnderstanding: string;
 }
 
+export interface CommunityPetRatio {
+  petId: PetId;
+  percent: number;
+}
+
+export interface CommunityThought {
+  topicId: TopicId;
+  text: string;
+}
+
+export interface CommunityInsights {
+  status: "ready" | "collecting" | "local_only";
+  thoughtStatus: "ready" | "collecting";
+  periodDays: number;
+  petRatios: CommunityPetRatio[];
+  thoughts: CommunityThought[];
+}
 export interface ReviewResult {
   learnerSaid: Array<{
     title: string;

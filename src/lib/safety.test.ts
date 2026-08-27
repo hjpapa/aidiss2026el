@@ -6,7 +6,9 @@ describe("child safety helpers", () => {
   it("blocks common direct identifiers before generation", () => {
     expect(checkForPii("전화번호는 010-1234-5678이야").safe).toBe(false);
     expect(checkForPii("나는 한빛초등학교 학생이야").categories).toContain("학교 이름");
+    expect(checkForPii("우리 반 김민수는 AI를 자주 써.").categories).toContain("다른 사람 이름");
     expect(checkForPii("추천 알고리즘은 본 기록을 사용해요").safe).toBe(true);
+    expect(checkForPii("친구 권리가 중요하다고 생각해요").safe).toBe(true);
   });
 
   it("turns answer-writing and stuck responses into guidance", () => {

@@ -180,7 +180,15 @@ export function DebateApp() {
           </fieldset>
           <div id="safety" className="safety-notice">
             <span className="safety-icon" aria-hidden="true">🛡️</span>
-            <div><strong>시작 전 안전 약속</strong><ul><li>이름, 학교, 학급, 전화번호, 주소는 쓰지 않아요.</li><li>대화는 익명으로 최대 30일 이내 저장된 뒤 삭제돼요.</li><li>AI 펫의 말도 틀릴 수 있으니 중요한 내용은 선생님과 확인해요.</li></ul></div>
+            <div>
+              <strong>시작 전 안전 약속</strong>
+              <ul>
+                <li>이름, 학교, 학급, 전화번호, 주소는 쓰지 않아요.</li>
+                <li>대화는 익명으로 최대 30일 이내 저장된 뒤 삭제돼요.</li>
+                <li>최종 생각은 내가 따로 동의할 때만 이름 없이 소개돼요.</li>
+                <li>AI 펫의 말도 틀릴 수 있으니 중요한 내용은 선생님과 확인해요.</li>
+              </ul>
+            </div>
           </div>
           {storageWarning ? <p className="error-message" role="status">{storageWarning}</p> : null}
           <label className="notice-check"><input type="checkbox" checked={noticeAccepted} onChange={(event) => setNoticeAccepted(event.target.checked)} /><span>선생님 또는 보호자와 안내를 읽고 안전 약속을 확인했어요.</span></label>
@@ -219,7 +227,18 @@ export function DebateApp() {
   }
 
   if (step === "reflection" && session) {
-    return <ReflectionStep session={session} onChange={updateSession} onHome={returnHome} onBackToDebate={() => { void updateSession({ ...session, status: "ready" }); setStep("debate"); }} onNewDebate={() => void resetExperience(true)} />;
+    return (
+      <ReflectionStep
+        session={session}
+        onChange={updateSession}
+        onHome={returnHome}
+        onBackToDebate={() => { void updateSession({ ...session, status: "ready" }); setStep("debate"); }}
+        onNewDebate={() => void resetExperience(false)}
+        onDelete={() => {
+          if (window.confirm("이 기기와 서버의 토론 기록을 모두 삭제할까요? 삭제하면 되돌릴 수 없어요.")) void resetExperience(true);
+        }}
+      />
+    );
   }
 
   return <main className="loading-screen"><p>진행 상태를 다시 불러오지 못했어요.</p><button className="primary-button" onClick={() => void resetExperience(false)}>처음으로</button></main>;

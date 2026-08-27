@@ -5,6 +5,7 @@ import { useState } from "react";
 import { PetAvatar } from "@/components/PetAvatar";
 import { THEORY_NOTE, THEORY_SOURCES } from "@/data/ethics-framework";
 import { PETS, PET_BY_ID } from "@/data/pets";
+import { recommendedOpponentPet } from "@/data/opponent-recommendations";
 import { TOPICS, TOPIC_BY_ID } from "@/data/topics";
 import type { GradeBand, InitialStance, PetId, SessionSetup, TopicId } from "@/types/debate";
 
@@ -23,6 +24,9 @@ export function SetupStep({ gradeBand, learnerPetId, onStart, onRetake }: SetupS
   const [error, setError] = useState("");
   const learnerPet = PET_BY_ID[learnerPetId];
   const topic = topicId ? TOPIC_BY_ID[topicId] : null;
+  const recommendedOpponentId =
+    topicId && stance ? recommendedOpponentPet(topicId, stance, learnerPetId) : null;
+
 
   const start = async () => {
     if (!topicId || !stance || !opponentPetId) return;
@@ -72,7 +76,7 @@ export function SetupStep({ gradeBand, learnerPetId, onStart, onRetake }: SetupS
       <section className="step-card" aria-labelledby="topic-title">
         <span className="step-number">1</span>
         <span className="eyebrow">토론 주제</span>
-        <h2 id="topic-title">어떤 기술 문제를 이야기할까요?</h2>
+        <h2 id="topic-title">어떤 고민을 함께 이야기해 볼까요?</h2>
         <fieldset className="topic-grid">
           <legend className="sr-only">토론 주제 선택</legend>
           {TOPICS.map((item) => (
@@ -88,6 +92,7 @@ export function SetupStep({ gradeBand, learnerPetId, onStart, onRetake }: SetupS
                 onChange={() => {
                   setTopicId(item.id);
                   setStance(null);
+                  setOpponentPetId(null);
                 }}
               />
               <span className="topic-icon" aria-hidden="true">{item.icon}</span>
@@ -114,7 +119,16 @@ export function SetupStep({ gradeBand, learnerPetId, onStart, onRetake }: SetupS
             <legend className="sr-only">처음 입장을 선택하세요</legend>
             {(["a", "b"] as InitialStance[]).map((value) => (
               <label key={value} className={stance === value ? "is-selected" : ""}>
-                <input type="radio" name="initial-stance" value={value} checked={stance === value} onChange={() => setStance(value)} />
+                <input
+                  type="radio"
+                  name="initial-stance"
+                  value={value}
+                  checked={stance === value}
+                  onChange={() => {
+                    setStance(value);
+                    setOpponentPetId(null);
+                  }}
+                />
                 <span className="stance-letter">{value.toUpperCase()}</span>
                 <strong>{value === "a" ? topic.stanceA[gradeBand] : topic.stanceB[gradeBand]}</strong>
               </label>
@@ -128,12 +142,13 @@ export function SetupStep({ gradeBand, learnerPetId, onStart, onRetake }: SetupS
           <span className="step-number">3</span>
           <span className="eyebrow">상대 펫</span>
           <h2 id="opponent-title">다른 관점으로 질문할 펫을 골라요</h2>
+          <p className="helper-text">내 첫 입장과 다른 질문을 던져 줄 펫에는 추천 표시가 있어요.</p>
           <fieldset className="opponent-grid">
             <legend className="sr-only">상대 펫 선택</legend>
             {PETS.filter((pet) => pet.id !== learnerPetId).map((pet) => (
               <label
                 key={pet.id}
-                className={`opponent-card ${opponentPetId === pet.id ? "is-selected" : ""}`}
+                className={`opponent-card ${opponentPetId === pet.id ? "is-selected" : ""} ${recommendedOpponentId === pet.id ? "is-recommended" : ""}`}
               >
                 <input
                   type="radio"
@@ -142,6 +157,7 @@ export function SetupStep({ gradeBand, learnerPetId, onStart, onRetake }: SetupS
                   checked={opponentPetId === pet.id}
                   onChange={() => setOpponentPetId(pet.id)}
                 />
+                {recommendedOpponentId === pet.id ? <span className="recommendation-badge">추천</span> : null}
                 <PetAvatar petId={pet.id} size="medium" />
                 <span><strong>{pet.name}</strong><small>{pet.roleName[gradeBand]} · {pet.lens}</small></span>
               </label>
