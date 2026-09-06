@@ -66,6 +66,7 @@ function mockChatTurn(
 
   return {
     opponentReply: `네 생각에서 중요한 이유를 하나 찾았어. 그런데 다른 입장에서는 이렇게 물을 수 있어. ${topic.opponentQuestions[nextAfter][setup.gradeBand]}`,
+    engagement: "substantive",
     allyHint: "기술이 무엇을 입력받아 어떤 결과를 만드는지 연결해서 말해 볼까?",
     state: {
       ...state,

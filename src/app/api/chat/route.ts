@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { apiError, authorizeSession, rejectOversizedRequest } from "@/lib/api-utils";
 import { moderateText, generateChatTurn } from "@/lib/openai";
 import { sanitizeDebateState } from "@/lib/readiness";
+import { engagementGuidance } from "@/lib/debate-engagement";
 import { ChatRequestSchema } from "@/lib/schemas";
 import { checkForPii, guidanceFor, safetyMessageFor } from "@/lib/safety";
 import { hashIdentifier, issueStateProof, verifyStateProof } from "@/lib/session-token";
@@ -198,7 +199,16 @@ export async function POST(request: Request) {
     }
   };
 
-  const learnerGuidance = guidanceFor(body.message);
+  let recentMessages = body.recentMessages;
+  if (auth.mode === "stored") {
+    try {
+      recentMessages = (await loadRecentMessages(body.sessionId, 16)) ?? [];
+    } catch {
+      await failClaim("context_load_failed");
+      return apiError("persistence_unavailable", "최근 토론 내용을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.", 503);
+    }
+  }
+  const learnerGuidance = guidanceFor(body.message) ?? engagementGuidance(body.message, recentMessages);
   if (learnerGuidance) {
     const learnerMessage = message({
       requestId: body.requestId,
@@ -208,7 +218,7 @@ export async function POST(request: Request) {
     });
     const guidanceMessage = message({
       requestId: body.requestId,
-      role: "ally_pet",
+      role: "opponent_pet",
       kind: "guidance",
       content: learnerGuidance,
       replyToMessageId: learnerMessage.id,
@@ -245,16 +255,6 @@ export async function POST(request: Request) {
       stateProof: issueStateProof(body.sessionId, body.setup, body.state, nextStateVersion),
       persistence: persistence.stored ? "stored" : "local_only",
     });
-  }
-
-  let recentMessages = body.recentMessages;
-  if (auth.mode === "stored") {
-    try {
-      recentMessages = (await loadRecentMessages(body.sessionId, 16)) ?? [];
-    } catch {
-      await failClaim("context_load_failed");
-      return apiError("persistence_unavailable", "최근 토론 내용을 안전하게 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.", 503);
-    }
   }
 
   const latestOpponent = [...recentMessages]
@@ -322,11 +322,15 @@ export async function POST(request: Request) {
       });
     }
 
-    const state = sanitizeDebateState(body.state, generated.result.state, contextMessages, learnerMessage.id);
+    const substantive = generated.result.engagement === "substantive";
+    if (!substantive) learnerMessage.kind = "guidance";
+    const state = substantive
+      ? sanitizeDebateState(body.state, generated.result.state, contextMessages, learnerMessage.id)
+      : body.state;
     const opponentMessage = message({
       requestId: body.requestId,
       role: "opponent_pet",
-      kind: "move",
+      kind: substantive ? "move" : "guidance",
       content: generated.result.opponentReply,
       replyToMessageId: learnerMessage.id,
     });

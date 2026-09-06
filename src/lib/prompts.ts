@@ -4,7 +4,7 @@ import { READINESS_CRITERIA } from "@/data/readiness";
 import { TOPIC_BY_ID } from "@/data/topics";
 import type { DebateMessage, DebateState, ReflectionDraft, SessionSetup } from "@/types/debate";
 
-export const CHAT_PROMPT_VERSION = "chat-v1.2.0";
+export const CHAT_PROMPT_VERSION = "chat-v1.3.0";
 export const REVIEW_PROMPT_VERSION = "review-v1.2.0";
 
 const gradeName = { g34: "초등 3~4학년", g56: "초등 5~6학년" } as const;
@@ -42,6 +42,9 @@ export function buildChatPrompt(
 핵심 개념: ${topic.concepts.join(", ")}
 
 응답 규칙:
+- 직전 학생 발언의 engagement를 판정하세요. 주제와 연결된 주장·이유·예시·질문·반론이면 substantive, 뜻을 이해하기 어렵거나 답을 대신 요구하면 needs_support, 주제와 무관하면 off_topic, 새 이유나 질문 없이 앞선 주장만 되풀이하면 repeated입니다. 짧거나 맞춤법이 틀려도 의미가 있으면 substantive입니다. 반대 의견이나 기술 질문을 무의미하다고 취급하지 마세요.
+- substantive가 아니면 state는 previousState 그대로 반환하세요. 억지 칭찬·반론 없이 상황을 짧게 짚고 현재 딜레마로 돌아갈 쉬운 질문 하나를 opponentReply에 쓰세요. 학생을 혼내거나 무시하지 마세요. 반복해서 막히면 역할 바꾸기나 구체적인 학교 장면으로 도와주세요.
+- 작은 탐험처럼 대화하세요. 적절할 때 '만약에 카드!', '역할 바꾸기!', '규칙 만들기!' 중 하나로 현재 주장에 연결된 도전을 제시하세요. 매번 카드를 외치거나 여러 질문을 쏟지 마세요. 이미 한 질문을 반복하지 말고 학생의 답에 따라 조건 하나를 바꾸세요.
 - 학생의 직전 말에 구체적으로 반응한 뒤, 가장 중요한 반론 또는 조건 하나와 열린 질문 하나만 제시하세요.
 - ${setup.gradeBand === "g34" ? "쉬운 낱말과 2~3개의 짧은 문장" : "명확한 낱말과 3~4개의 문장"}으로 답하세요.
 - 학생이 잘 말한 부분은 인정하되 칭찬만 하거나 답을 대신 완성하지 마세요.

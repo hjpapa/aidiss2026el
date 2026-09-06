@@ -10,6 +10,8 @@ import { PET_BY_ID } from "@/data/pets";
 import { TOPIC_BY_ID } from "@/data/topics";
 import { AppApiError, sendChat } from "@/lib/api-client";
 import { isReflectionReady } from "@/lib/readiness";
+import { DEBATE_CHALLENGES } from "@/lib/debate-engagement";
+import { READINESS_CRITERIA } from "@/data/readiness";
 import type { DebateMessage, LocalDebateSession } from "@/types/debate";
 
 interface DebateArenaProps {
@@ -53,6 +55,8 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
   const [busy, setBusy] = useState(false);
   const [pendingLearner, setPendingLearner] = useState<DebateMessage | null>(null);
   const [error, setError] = useState("");
+  const [challengeIndex, setChallengeIndex] = useState(0);
+  const [discovery, setDiscovery] = useState("");
   const [visibleCount, setVisibleCount] = useState(100);
   const [showLatestButton, setShowLatestButton] = useState(false);
   const transcriptRef = useRef<HTMLOListElement>(null);
@@ -62,6 +66,8 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
   const learnerPet = PET_BY_ID[session.setup.learnerPetId];
   const opponentPet = PET_BY_ID[session.setup.opponentPetId];
   const ready = isReflectionReady(session.state);
+  const challenge = DEBATE_CHALLENGES[challengeIndex];
+  const completedCount = session.state.readiness.filter((item) => item.completed).length;
   const allVisibleMessages = useMemo(
     () => session.messages.filter((message) => message.role !== "ally_pet"),
     [session.messages],
@@ -145,6 +151,10 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
       };
       setPendingLearner(null);
       await onChange(next);
+      const discovered = result.state.readiness.filter((item) => item.completed && !session.state.readiness.find((before) => before.id === item.id)?.completed);
+      setDiscovery(discovered.length
+        ? `🐾 새 발자국 발견! ${discovered.map((item) => READINESS_CRITERIA.find((rule) => rule.id === item.id)?.shortLabel).join(" · ")}`
+        : "");
       pendingRequestRef.current = null;
     } catch (cause) {
       setPendingLearner(null);
@@ -207,6 +217,19 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
             <p>{topic.scenario[session.setup.gradeBand]}</p>
             <strong>{topic.valueConflict[session.setup.gradeBand]}</strong>
           </section>
+          <section className="debate-challenge" aria-label="펫 탐험 카드">
+            <div><strong>🐾 생각 탐험 · {completedCount}/5 발자국</strong><small>새로운 이유와 발견으로 지도를 채워요.</small></div>
+            <h2>{challenge.title}</h2>
+            <p>{challenge.question}</p>
+            <div className="challenge-actions">
+              <button type="button" className="secondary-button" disabled={busy} onClick={() => {
+                setInput((current) => current || challenge.starter);
+                document.getElementById("debate-input")?.focus();
+              }}>이 도전으로 말하기</button>
+              <button type="button" className="quiet-button" disabled={busy} onClick={() => setChallengeIndex((index) => (index + 1) % DEBATE_CHALLENGES.length)}>다른 도전 카드</button>
+            </div>
+            <p role="status" className="discovery-feedback">{discovery}</p>
+          </section>
           <ol
             className="chat-transcript"
             aria-label="토론 대화"
@@ -254,7 +277,7 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
                 if (pendingRequestRef.current?.content !== event.target.value.trim()) pendingRequestRef.current = null;
               }}
               onKeyDown={(event) => {
-                if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+                if (!event.nativeEvent.isComposing && (event.ctrlKey || event.metaKey) && event.key === "Enter") {
                   event.preventDefault();
                   void submit();
                 }
@@ -304,7 +327,7 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
                 <span className="gate-icon" aria-hidden="true">🌟</span>
                 <h2>다섯 발자국을 모두 찾았어요!</h2>
                 <p>더 이야기해도 좋고, 지금 내 생각을 돌아봐도 좋아요.</p>
-                <button type="button" className="primary-button" onClick={onReflect}>성찰하러 가기</button>
+                <button type="button" className="primary-button" disabled={busy} onClick={onReflect}>성찰하러 가기</button>
                 <small>입력창은 계속 열려 있어요.</small>
               </>
             ) : (

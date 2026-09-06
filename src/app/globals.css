@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+.debate-challenge { margin: 12px 20px; padding: 16px; border: 2px solid #d6cef3; border-radius: 18px; background: #f6f2ff; color: #30264f; }
+.debate-challenge small { display: block; margin-top: 4px; }
+.debate-challenge h2 { font-size: 1.1rem; margin: 10px 0 6px; }
+.debate-challenge p { line-height: 1.6; margin: 4px 0; }
+.challenge-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.discovery-feedback { color: #28563e; font-weight: 700; }
+.discovery-feedback:empty { display: none; }
+@media (max-width: 640px) {
+  .debate-challenge { margin: 10px; padding: 12px; }
+  .challenge-actions button { flex: 1 1 140px; }
+}
+
 :root {
   --bg: #fff8ec;
   --bg-blue: #eff8fb;

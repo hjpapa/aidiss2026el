@@ -31,6 +31,20 @@ test("a learner can debate without a turn cap and complete evidence-based reflec
   await page.reload();
   await expect(page.getByLabel("내 생각 입력")).toBeVisible();
   const composer = page.getByLabel("내 생각 입력");
+  await page.getByRole("button", { name: "다른 도전 카드" }).click();
+  await expect(page.getByRole("heading", { name: "🔀 만약에 카드" })).toBeVisible();
+  await page.getByRole("button", { name: "이 도전으로 말하기" }).click();
+  await expect(composer).toHaveValue("만약 이 기술이 틀린다면 ");
+  const chatResponse = () => page.waitForResponse((response) => response.url().endsWith("/api/chat") && response.request().method() === "POST");
+  for (const noise of ["ㅋㅋㅋㅋ", "내 생각은 … 왜냐하면 …"]) {
+    const response = chatResponse();
+    await composer.fill(noise);
+    await page.getByRole("button", { name: "말하기", exact: true }).click();
+    const turn = await (await response).json();
+    expect(turn.acceptedLearnerMessage.kind).toBe("guidance");
+    expect(turn.state.readiness.every((item: { completed: boolean }) => !item.completed)).toBe(true);
+    await expect(page.getByRole("list", { name: "토론 대화" }).getByText(turn.opponentMessage.content, { exact: true })).toBeVisible();
+  }
   const moves = [
     "AI는 많은 글의 규칙을 데이터에서 찾아 다음 낱말을 예상해 답을 만들어요.",
     "빨리 정보를 찾는 좋은 점이 있지만 틀린 답을 믿을 위험도 있어요.",
@@ -42,7 +56,7 @@ test("a learner can debate without a turn cap and complete evidence-based reflec
   const transcript = page.getByRole("list", { name: "토론 대화" });
   for (const move of moves) {
     await composer.fill(move);
-    await page.getByRole("button", { name: "말하기" }).click();
+    await page.getByRole("button", { name: "말하기", exact: true }).click();
     await expect(transcript.getByText(move, { exact: true })).toBeVisible();
     await expect(page.getByText(/생각 중이에요/)).toBeHidden();
   }

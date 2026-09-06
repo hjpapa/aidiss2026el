@@ -87,6 +87,7 @@ export const ChatRequestSchema = z.object({
 });
 
 export const ChatModelOutputSchema = z.object({
+  engagement: z.enum(["substantive", "needs_support", "off_topic", "repeated"]),
   opponentReply: z.string().min(1).max(700),
   allyHint: z.string().max(240),
   state: DebateStateSchema,
