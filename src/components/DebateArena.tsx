@@ -119,6 +119,7 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
     setInput("");
     setBusy(true);
     setError("");
+    setDiscovery("");
     try {
       const result = await sendChat({
         sessionId: session.id,
@@ -151,10 +152,11 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
       };
       setPendingLearner(null);
       await onChange(next);
-      const discovered = result.state.readiness.filter((item) => item.completed && !session.state.readiness.find((before) => before.id === item.id)?.completed);
-      setDiscovery(discovered.length
-        ? `🐾 새 발자국 발견! ${discovered.map((item) => READINESS_CRITERIA.find((rule) => rule.id === item.id)?.shortLabel).join(" · ")}`
-        : "");
+      const discovered = result.state.readiness
+        .filter((item) => item.completed && !session.state.readiness.find((before) => before.id === item.id)?.completed)
+        .map((item) => READINESS_CRITERIA.find((rule) => rule.id === item.id)?.shortLabel)
+        .filter(Boolean);
+      setDiscovery(discovered.length ? `🐾 새 발자국 발견! ${discovered.join(" · ")}` : "");
       pendingRequestRef.current = null;
     } catch (cause) {
       setPendingLearner(null);
@@ -218,7 +220,7 @@ export function DebateArena({ session, onChange, onHome, onReflect, onDelete }: 
             <strong>{topic.valueConflict[session.setup.gradeBand]}</strong>
           </section>
           <section className="debate-challenge" aria-label="펫 탐험 카드">
-            <div><strong>🐾 생각 탐험 · {completedCount}/5 발자국</strong><small>새로운 이유와 발견으로 지도를 채워요.</small></div>
+            <div><strong>🐾 생각 탐험 · {completedCount}/{READINESS_CRITERIA.length} 발자국</strong><small>새로운 이유와 발견으로 지도를 채워요.</small></div>
             <h2>{challenge.title}</h2>
             <p>{challenge.question}</p>
             <div className="challenge-actions">

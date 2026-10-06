@@ -199,8 +199,9 @@ export async function POST(request: Request) {
     }
   };
 
+  const safetyGuidance = guidanceFor(body.message);
   let recentMessages = body.recentMessages;
-  if (auth.mode === "stored") {
+  if (!safetyGuidance && auth.mode === "stored") {
     try {
       recentMessages = (await loadRecentMessages(body.sessionId, 16)) ?? [];
     } catch {
@@ -208,7 +209,7 @@ export async function POST(request: Request) {
       return apiError("persistence_unavailable", "최근 토론 내용을 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.", 503);
     }
   }
-  const learnerGuidance = guidanceFor(body.message) ?? engagementGuidance(body.message, recentMessages);
+  const learnerGuidance = safetyGuidance ?? engagementGuidance(body.message, recentMessages);
   if (learnerGuidance) {
     const learnerMessage = message({
       requestId: body.requestId,
